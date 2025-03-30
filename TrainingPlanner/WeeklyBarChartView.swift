@@ -37,4 +37,3 @@ struct WeeklyBarChartView: View {
         .cornerRadius(12)
     }
 }
-G67$rLD
