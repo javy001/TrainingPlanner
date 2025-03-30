@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct TrainingPlannerApp: App {
+    @StateObject private var dataController = DataController()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(dataController)
+                .preferredColorScheme(.dark)
         }
     }
 }
