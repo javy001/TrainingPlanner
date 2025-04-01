@@ -1,0 +1,207 @@
+//
+//  WeekView.swift
+//  TrainingPlanner
+//
+//  Created by Javier Quintero on 3/24/25.
+//
+
+import SwiftUI
+
+struct WeekView: View {
+    @EnvironmentObject var vm: DataController
+    @State private var showAddSheet: Bool = false
+    @State private var showCopySheet: Bool = false
+    @State private var showDeleteConfirm: Bool = false
+    @State private var metric: String = "duration"
+
+    let weekOffset: Int
+
+    private let calendar = Calendar.current
+    private let formatter = DateFormatter()
+    private let currentDate = Date()
+
+    var body: some View {
+
+        let startOfWeek = mondayOfTheWeek(
+            from:
+                calendar.date(
+                    byAdding: .weekOfYear, value: weekOffset, to: currentDate)
+                ?? currentDate)
+        let endOfWeek = Utils.sundayOfTheWeek(from: startOfWeek)
+        let daysOfWeek = getDaysOfWeek(startingFrom: startOfWeek)
+        let weeklyWorkouts = vm.workouts.filter {
+            ($0.date!) >= startOfWeek
+                && ($0.date!) <= endOfWeek
+        }
+        let totalHours = weeklyWorkouts.map { metric == "duration" ? $0.duration : $0.distance }.reduce(0, +)
+        let cyclingHours = weeklyWorkouts.filter { $0.type == "Cycling" }.map(
+            metric == "duration" ? \.duration : \.distance
+        ).reduce(0, +)
+        let swimmingHours = weeklyWorkouts.filter { $0.type == "Swimming" }.map(
+            metric == "duration" ? \.duration : \.distance
+        ).reduce(0, +)
+        let runningHours = weeklyWorkouts.filter { $0.type == "Running" }.map(
+            metric == "duration" ? \.duration : \.distance
+        ).reduce(0, +)
+        ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 25) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker("View Type", selection: $metric) {
+                            Text("Time").tag("duration")
+                            Text("Distance").tag("distance")
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+
+                        Text(
+                            " \(self.longDayFormat(from: startOfWeek)) - \(self.longDayFormat(from: endOfWeek))"
+                        )
+                        .font(.footnote)
+                    }
+
+                    CalendarDaysView(daysOfWeek: daysOfWeek, metric: metric)
+                        .transition(.scale)
+
+                    WeeklyBarChartView(data: [
+                        (
+                            x: "Swimming", y: swimmingHours,
+                            color: Sport.swimming.backgroundColor
+                        ),
+                        (
+                            x: "Cycling", y: cyclingHours,
+                            color: Sport.cycling.backgroundColor
+                        ),
+                        (
+                            x: "Running", y: runningHours,
+                            color: Sport.running.backgroundColor
+                        ),
+                    ], metric: metric == "duration" ? "Hours" : "Miles")
+                    .padding(.vertical, 20)
+
+                    Spacer()
+
+                    VStack(alignment: .leading) {
+                        let metricLabel = metric == "duration" ? "hours" : "miles"
+                        let swimMetric = metric == "distance" ? Utils.milesToYards(from: swimmingHours) : swimmingHours
+                        Text(
+                            "\(String(format: "%.2f", swimMetric)) \(metric == "duration" ? "hours" : "yards") swimming"
+                        )
+                        .font(.footnote)
+                        Text(
+                            "\(String(format: "%.2f", cyclingHours)) \(metricLabel) cycling"
+                        )
+                        .font(.footnote)
+                        Text(
+                            "\(String(format: "%.2f", runningHours)) \(metricLabel) running"
+                        )
+                        .font(.footnote)
+                        Text(
+                            "\(String(format: "%.2f", totalHours)) \(metricLabel) total"
+                        )
+                        .font(.headline)
+                        .fontWeight(.bold)
+                    }
+
+                    Spacer()
+                }
+            }
+            VStack {
+                // floating menu button
+                Spacer()
+                HStack {
+                    Spacer()
+                    Menu {
+                        Button(action: {
+                            showDeleteConfirm = true
+                        }) {
+                            Label(
+                                "Delete this week's workouts",
+                                systemImage: "trash")
+                        }
+                        Button(action: {
+                            showCopySheet = true
+                        }) {
+                            Label(
+                                "Copy previous week",
+                                systemImage: "document.on.document")
+                        }
+                        Button(action: {
+                            showAddSheet = true
+                        }) {
+                            Label("Add workout", systemImage: "plus")
+                        }
+                    } label: {
+                        Circle()
+                            .fill(Color(.systemGray6))
+                            .frame(width: 35, height: 35)
+                            .overlay(Image(systemName: "plus"))
+
+                    }
+                    .sheet(
+                        isPresented: $showAddSheet,
+                        content: {
+                            AddWorkoutView(
+                                workout: nil, startDate: startOfWeek)
+                        }
+                    )
+                    .sheet(
+                        isPresented: $showCopySheet,
+                        content: {
+                            CopyWeekView(startOfWeek: startOfWeek)
+                        }
+                    )
+                }
+                .padding()
+                .alert("Delete Workouts?", isPresented: $showDeleteConfirm) {
+                    Button("Cancel", role: .cancel) {
+
+                    }
+                    Button("Delete", role: .destructive) {
+                        for workout in weeklyWorkouts {
+                            vm.deleteWorkout(workout: workout)
+                        }
+                    }
+                } message: {
+                    Text(
+                        "Are you sure you want to delete all the workouts for this week?"
+                    )
+                }
+            }
+        }
+    }
+
+    private func getDaysOfWeek(startingFrom date: Date) -> [Date] {
+        var dates: [Date] = []
+        for i in 0..<7 {
+            if let nextDate = calendar.date(byAdding: .day, value: i, to: date)
+            {
+                dates.append(nextDate)
+            }
+        }
+        return dates
+    }
+
+    private func longDayFormat(from date: Date) -> String {
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: date)
+    }
+
+    private func mondayOfTheWeek(from date: Date) -> Date {
+        let weekday = calendar.component(.weekday, from: date)
+        let daysToMonday = (weekday + 5) % 7
+        let monday =
+            calendar.date(byAdding: .day, value: -daysToMonday, to: date)
+            ?? Date()
+        var components = calendar.dateComponents(
+            [.year, .month, .day], from: monday)
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+        return calendar.date(from: components) ?? Date()
+    }
+
+}
+
+#Preview {
+    WeekView(weekOffset: 0)
+}

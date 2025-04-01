@@ -10,17 +10,34 @@ import SwiftUI
 struct DayView: View {
     @EnvironmentObject var vm: DataController
     var workouts: [Workout]
-    
+    var metric: String
+
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
             ForEach(workouts, id: \.id) { workout in
                 let fetchedTime = vm.fetchedTime
                 let sportName = workout.type ?? ""
                 let sport = Sport.from(sportName: sportName)
-                print("\(fetchedTime)")
-                return NavigationLink(destination: SportDetailView(workout: workout)) {
-                    SportCell(sport: sport)
+                VStack {
+                    NavigationLink(
+                        destination: SportDetailView(workout: workout)
+                    ) {
+                        SportCell(sport: sport)
+                    }
+                    if metric == "distance" {
+                        let val =
+                            sport == .swimming
+                            ? Utils.milesToYards(from: workout.distance)
+                            : workout.distance
+                        let label = sport == .swimming ? "" : "mi"
+                        Text("\(Utils.formatNumber(val))\(label)")
+                            .font(.caption)
+                    } else {
+                        Text("\(String(format: "%.1f", workout.duration))hr")
+                            .font(.caption)
+                    }
                 }
+
             }
         }
     }
@@ -29,3 +46,4 @@ struct DayView: View {
 //#Preview {
 //    DayView(workouts: [])
 //}
+//String(format: "%.1f", val)

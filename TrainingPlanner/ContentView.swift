@@ -14,6 +14,7 @@ struct ContentView: View {
         NavigationView {
             VStack {
                 WeekView(weekOffset: weekOffset)
+                    .animation(.easeInOut(duration: 0.5), value: weekOffset)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button(action: {
@@ -42,7 +43,7 @@ struct ContentView: View {
                 Spacer()
             }
             .padding()
-            .navigationTitle("Calendar")
+            .navigationTitle("Weekly Training")
             Spacer()
         }
         .gesture(
@@ -54,15 +55,16 @@ struct ContentView: View {
                     guard abs(hAmount) > abs(vAmount) else {
                         return
                     }
-
-                    if hAmount > 0 {
-                        weekOffset -= 1
-                    } else if hAmount < 0 {
-                        weekOffset += 1
+                    withAnimation {
+                        if hAmount > 0 {
+                            weekOffset -= 1
+                        } else if hAmount < 0 {
+                            weekOffset += 1
+                        }
                     }
+
                 }
         )
-        .animation(.easeInOut(duration: 0.5), value: weekOffset)
     }
 }
 
