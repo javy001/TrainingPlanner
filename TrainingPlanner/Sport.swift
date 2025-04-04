@@ -36,6 +36,7 @@ enum Sport: CaseIterable {
             return Color(red: 73/255, green: 165/255, blue: 196/255)
         case .cycling:
             return Color(red: 228/255, green: 152/255, blue: 58/255)
+//            return Color(red: 140/255, green: 58/255, blue: 139/255)
         case .lifting:
             return Color(red: 102/255, green: 162/255, blue: 142/255)
         case .blank:
@@ -51,6 +52,7 @@ enum Sport: CaseIterable {
             return Color(red: 176/255, green: 216/255, blue: 230/255)
         case .cycling:
             return Color(red: 219/255, green: 207/255, blue: 189/255)
+//            return Color(red: 208/255, green: 141/255, blue: 231/255)
         case .lifting:
             return Color(red: 143/255, green: 200/255, blue: 180/255)
         case .blank:

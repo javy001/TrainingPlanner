@@ -45,12 +45,18 @@ struct WeeklyLineChartView: View {
                                         .font(.headline)
                                     ForEach(selectedValues, id: \.type) {
                                         selectedValue in
-                                        HStack {
+                                        var yVal = selectedValue.y
+                                        var label = metric
+                                        if selectedValue.type == "Swimming" && metric == "Miles" {
+                                            yVal = Utils.milesToYards(from: yVal)
+                                            label = "Yards"
+                                        }
+                                        return HStack {
                                             Circle()
                                                 .fill(selectedValue.color)
                                                 .frame(width: 8, height: 8)
                                             Text(
-                                                "\(selectedValue.type) \(String(format: "%.1f",selectedValue.y)) \(metric)"
+                                                "\(selectedValue.type) \(String(format: "%.1f",yVal)) \(label)"
                                             )
                                             .font(.caption)
                                         }
