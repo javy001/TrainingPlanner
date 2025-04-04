@@ -65,9 +65,10 @@ struct CopyWeekView: View {
             let type = workout.type ?? "Running"
             let duration = workout.duration * factor
             let distance = workout.distance * factor
+            let notes = workout.notes ?? ""
             vm.addWorkout(
                 date: date ?? Date(), type: type, duration: "\(duration)",
-                distance: "\(distance)")
+                distance: "\(distance)", notes: notes)
         }
         vm.saveContext()
         dismiss()

@@ -10,6 +10,7 @@ enum Sport: CaseIterable {
     case running
     case swimming
     case cycling
+    case lifting
     case blank
 
     var iconName: String {
@@ -20,6 +21,8 @@ enum Sport: CaseIterable {
             return "figure.open.water.swim"
         case .cycling:
             return "figure.outdoor.cycle"
+        case .lifting:
+            return "figure.strengthtraining.traditional"
         case .blank:
             return "figure.stand"
         }
@@ -33,6 +36,8 @@ enum Sport: CaseIterable {
             return Color(red: 73/255, green: 165/255, blue: 196/255)
         case .cycling:
             return Color(red: 228/255, green: 152/255, blue: 58/255)
+        case .lifting:
+            return Color(red: 102/255, green: 162/255, blue: 142/255)
         case .blank:
             return Color.black
         }
@@ -41,11 +46,13 @@ enum Sport: CaseIterable {
     var backgroundColor: Color {
         switch self {
         case .running:
-            return Color(red: 194/255, green: 164/255, blue: 185/255)
+            return Color(red: 224/255, green: 182/255, blue: 201/255)
         case .swimming:
-            return Color(red: 148/255, green: 204/255, blue: 216/255)
+            return Color(red: 176/255, green: 216/255, blue: 230/255)
         case .cycling:
-            return Color(red: 188/255, green: 192/255, blue: 173/255)
+            return Color(red: 219/255, green: 207/255, blue: 189/255)
+        case .lifting:
+            return Color(red: 143/255, green: 200/255, blue: 180/255)
         case .blank:
             return Color.gray
         }
@@ -59,6 +66,8 @@ enum Sport: CaseIterable {
             return "Swimming"
         case .cycling:
             return "Cycling"
+        case .lifting:
+            return "Lifting"
         case .blank:
             return ""
         }

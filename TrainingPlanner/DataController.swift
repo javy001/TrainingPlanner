@@ -33,12 +33,13 @@ class DataController: ObservableObject {
         }
     }
     
-    func addWorkout(date: Date, type: String, duration: String, distance: String) {
+    func addWorkout(date: Date, type: String, duration: String, distance: String, notes: String) {
         let workout = Workout(context: container.viewContext)
         workout.date = date
         workout.type = type
         workout.duration = Double(duration) ?? 0
         workout.distance = Double(distance) ?? 0
+        workout.notes = notes
         workout.id = UUID()
         
         saveContext()

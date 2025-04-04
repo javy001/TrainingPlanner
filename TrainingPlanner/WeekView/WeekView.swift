@@ -25,15 +25,21 @@ struct WeekView: View {
         let startOfWeek = mondayOfTheWeek(
             from:
                 calendar.date(
-                    byAdding: .weekOfYear, value: weekOffset, to: currentDate)
-                ?? currentDate)
+                    byAdding: .weekOfYear,
+                    value: weekOffset,
+                    to: currentDate
+                )
+                ?? currentDate
+        )
         let endOfWeek = Utils.sundayOfTheWeek(from: startOfWeek)
         let daysOfWeek = getDaysOfWeek(startingFrom: startOfWeek)
         let weeklyWorkouts = vm.workouts.filter {
             ($0.date!) >= startOfWeek
                 && ($0.date!) <= endOfWeek
         }
-        let totalHours = weeklyWorkouts.map { metric == "duration" ? $0.duration : $0.distance }.reduce(0, +)
+        let totalHours = weeklyWorkouts.map {
+            metric == "duration" ? $0.duration : $0.distance
+        }.reduce(0, +)
         let cyclingHours = weeklyWorkouts.filter { $0.type == "Cycling" }.map(
             metric == "duration" ? \.duration : \.distance
         ).reduce(0, +)
@@ -61,28 +67,38 @@ struct WeekView: View {
 
                     CalendarDaysView(daysOfWeek: daysOfWeek, metric: metric)
                         .transition(.scale)
+                    
+                    ChartView(workouts: weeklyWorkouts, metric: metric, days: daysOfWeek)
+                        .padding(.vertical, 20)
 
-                    WeeklyBarChartView(data: [
-                        (
-                            x: "Swimming", y: swimmingHours,
-                            color: Sport.swimming.backgroundColor
-                        ),
-                        (
-                            x: "Cycling", y: cyclingHours,
-                            color: Sport.cycling.backgroundColor
-                        ),
-                        (
-                            x: "Running", y: runningHours,
-                            color: Sport.running.backgroundColor
-                        ),
-                    ], metric: metric == "duration" ? "Hours" : "Miles")
-                    .padding(.vertical, 20)
+//                    WeeklyBarChartView(
+//                        data: [
+//                            (
+//                                x: "Swimming", y: swimmingHours,
+//                                color: Sport.swimming.backgroundColor
+//                            ),
+//                            (
+//                                x: "Cycling", y: cyclingHours,
+//                                color: Sport.cycling.backgroundColor
+//                            ),
+//                            (
+//                                x: "Running", y: runningHours,
+//                                color: Sport.running.backgroundColor
+//                            ),
+//                        ],
+//                        metric: metric == "duration" ? "Hours" : "Miles"
+//                    )
+//                    .padding(.vertical, 20)
 
                     Spacer()
 
                     VStack(alignment: .leading) {
-                        let metricLabel = metric == "duration" ? "hours" : "miles"
-                        let swimMetric = metric == "distance" ? Utils.milesToYards(from: swimmingHours) : swimmingHours
+                        let metricLabel =
+                            metric == "duration" ? "hours" : "miles"
+                        let swimMetric =
+                            metric == "distance"
+                            ? Utils.milesToYards(from: swimmingHours)
+                            : swimmingHours
                         Text(
                             "\(String(format: "%.2f", swimMetric)) \(metric == "duration" ? "hours" : "yards") swimming"
                         )
@@ -116,14 +132,16 @@ struct WeekView: View {
                         }) {
                             Label(
                                 "Delete this week's workouts",
-                                systemImage: "trash")
+                                systemImage: "trash"
+                            )
                         }
                         Button(action: {
                             showCopySheet = true
                         }) {
                             Label(
                                 "Copy previous week",
-                                systemImage: "document.on.document")
+                                systemImage: "document.on.document"
+                            )
                         }
                         Button(action: {
                             showAddSheet = true
@@ -141,13 +159,17 @@ struct WeekView: View {
                         isPresented: $showAddSheet,
                         content: {
                             AddWorkoutView(
-                                workout: nil, startDate: startOfWeek)
+                                workout: nil,
+                                startDate: startOfWeek
+                            )
+                            .presentationDragIndicator(.visible)
                         }
                     )
                     .sheet(
                         isPresented: $showCopySheet,
                         content: {
                             CopyWeekView(startOfWeek: startOfWeek)
+                                .presentationDragIndicator(.visible)
                         }
                     )
                 }
@@ -193,7 +215,9 @@ struct WeekView: View {
             calendar.date(byAdding: .day, value: -daysToMonday, to: date)
             ?? Date()
         var components = calendar.dateComponents(
-            [.year, .month, .day], from: monday)
+            [.year, .month, .day],
+            from: monday
+        )
         components.hour = 0
         components.minute = 0
         components.second = 0

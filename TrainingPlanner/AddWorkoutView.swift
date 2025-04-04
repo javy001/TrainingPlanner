@@ -19,6 +19,8 @@ struct AddWorkoutView: View {
     @State var distance: String
     @State var hours: Int
     @State var minutes: Int
+    @State var notes: String
+    @State private var showDeleteConfirm: Bool = false
 
     init(workout: Workout?, startDate: Date?) {
         var distance = workout?.distance ?? 0.0
@@ -32,6 +34,7 @@ struct AddWorkoutView: View {
         _distance = State(initialValue: "\(distance)")
         _hours = State(initialValue: Int(totalMinutes / 60))
         _minutes = State(initialValue: Int(totalMinutes) % 60)
+        _notes = State(initialValue: workout?.notes ?? "")
 
         self.workout = workout
     }
@@ -74,6 +77,13 @@ struct AddWorkoutView: View {
                         }
                     }
                 }
+                
+                Section("Notes") {
+                    TextEditor(text: $notes)
+                        .frame(minHeight: 120)
+                        .focused($isFocused)
+                }
+                
                 Section {
                     Button("Save") {
                         var convertedDistance = Double(distance) ?? 0
@@ -83,12 +93,13 @@ struct AddWorkoutView: View {
                         if workout == nil {
                             vm.addWorkout(
                                 date: date, type: type, duration: duration,
-                                distance: "\(convertedDistance)")
+                                distance: "\(convertedDistance)", notes: notes)
                         } else {
                             workout!.date = date
                             workout!.type = type
                             workout!.duration = Double(duration) ?? 0
                             workout!.distance = convertedDistance
+                            workout!.notes = notes
                             vm.saveContext()
                         }
                         dismiss()
@@ -98,8 +109,7 @@ struct AddWorkoutView: View {
                     }
                     if !(workout == nil) {
                         Button(action: {
-                            vm.deleteWorkout(workout: workout!)
-                            dismiss()
+                            showDeleteConfirm = true
                         }) {
                             Text("Delete")
                                 .foregroundColor(.red)
@@ -107,6 +117,19 @@ struct AddWorkoutView: View {
                     }
 
                 }
+            }
+            .alert("Delete Workout?", isPresented: $showDeleteConfirm) {
+                Button("Cancel", role: .cancel) {
+
+                }
+                Button("Delete", role: .destructive) {
+                    vm.deleteWorkout(workout: workout!)
+                    dismiss()
+                }
+            } message: {
+                Text(
+                    "Are you sure you want to delete this workout?"
+                )
             }
             .navigationTitle(Text(title))
             .toolbar {
