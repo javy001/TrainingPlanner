@@ -67,28 +67,13 @@ struct WeekView: View {
 
                     CalendarDaysView(daysOfWeek: daysOfWeek, metric: metric)
                         .transition(.scale)
-                    
-                    ChartView(workouts: weeklyWorkouts, metric: metric, days: daysOfWeek)
-                        .padding(.vertical, 20)
 
-//                    WeeklyBarChartView(
-//                        data: [
-//                            (
-//                                x: "Swimming", y: swimmingHours,
-//                                color: Sport.swimming.backgroundColor
-//                            ),
-//                            (
-//                                x: "Cycling", y: cyclingHours,
-//                                color: Sport.cycling.backgroundColor
-//                            ),
-//                            (
-//                                x: "Running", y: runningHours,
-//                                color: Sport.running.backgroundColor
-//                            ),
-//                        ],
-//                        metric: metric == "duration" ? "Hours" : "Miles"
-//                    )
-//                    .padding(.vertical, 20)
+                    ChartView(
+                        workouts: weeklyWorkouts,
+                        metric: metric,
+                        days: daysOfWeek
+                    )
+                    .padding(.vertical, 20)
 
                     Spacer()
 
@@ -150,9 +135,10 @@ struct WeekView: View {
                         }
                     } label: {
                         Circle()
-                            .fill(Color(.systemGray6))
+                            .fill(Color.accentColor)
                             .frame(width: 35, height: 35)
                             .overlay(Image(systemName: "plus"))
+                            .foregroundColor(.white)
 
                     }
                     .sheet(
@@ -223,6 +209,8 @@ struct WeekView: View {
         components.second = 0
         return calendar.date(from: components) ?? Date()
     }
+    
+    
 
 }
 

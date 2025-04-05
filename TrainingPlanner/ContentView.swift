@@ -9,42 +9,56 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var weekOffset: Int = 0
+    @State private var showBlur: Bool = false
 
     var body: some View {
         NavigationView {
-            VStack {
-                WeekView(weekOffset: weekOffset)
-                    .animation(.easeInOut(duration: 0.5), value: weekOffset)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                weekOffset += 1
-                            }) {
-                                Image(systemName: "chevron.right")
+            ZStack {
+                VStack {
+                    WeekView(weekOffset: weekOffset)
+                        .animation(.easeInOut(duration: 0.5), value: weekOffset)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: {
+                                    handleSwipe(value: 1)
+                                }) {
+                                    Image(systemName: "chevron.right")
+                                }
                             }
-                        }
 
-                        ToolbarItem(placement: .principal) {
-                            Button(action: {
-                                weekOffset = 0
-                            }) {
-                                Text("Today")
+                            ToolbarItem(placement: .principal) {
+                                Button(action: {
+                                    if weekOffset != 0 {
+                                        handleSwipe(value: weekOffset * -1)
+                                    }
+                                }) {
+                                    Text("Today")
+                                }
                             }
-                        }
 
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                weekOffset -= 1
-                            }) {
-                                Image(systemName: "chevron.left")
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button(action: {
+                                    handleSwipe(value: -1)
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                }
                             }
                         }
-                    }
+                    Spacer()
+                }
+                .padding()
+                .navigationTitle("Weekly Training")
                 Spacer()
+
+                if showBlur {
+                    Color.black
+                        .opacity(0.3)
+                        .ignoresSafeArea()
+                        .background(.ultraThinMaterial)
+                        .transition(.opacity)
+                        .animation(.easeInOut, value: showBlur)
+                }
             }
-            .padding()
-            .navigationTitle("Weekly Training")
-            Spacer()
         }
         .gesture(
             DragGesture()
@@ -57,14 +71,22 @@ struct ContentView: View {
                     }
                     withAnimation {
                         if hAmount > 0 {
-                            weekOffset -= 1
+                            handleSwipe(value: -1)
                         } else if hAmount < 0 {
-                            weekOffset += 1
+                            handleSwipe(value: 1)
                         }
                     }
 
                 }
         )
+    }
+
+    private func handleSwipe(value: Int) {
+        showBlur = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.showBlur = false
+            weekOffset += value
+        }
     }
 }
 
