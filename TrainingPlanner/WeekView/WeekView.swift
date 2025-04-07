@@ -138,7 +138,7 @@ struct WeekView: View {
                             .fill(Color.accentColor)
                             .frame(width: 35, height: 35)
                             .overlay(Image(systemName: "plus"))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
 
                     }
                     .sheet(

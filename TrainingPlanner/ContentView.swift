@@ -83,9 +83,9 @@ struct ContentView: View {
 
     private func handleSwipe(value: Int) {
         showBlur = true
+        weekOffset += value
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.showBlur = false
-            weekOffset += value
         }
     }
 }
