@@ -14,6 +14,8 @@ struct WeekView: View {
     @State private var showDeleteConfirm: Bool = false
     @State private var metric: String = "duration"
 
+    @State private var refreshTrigger = UUID()
+
     let weekOffset: Int
 
     private let calendar = Calendar.current
@@ -176,6 +178,17 @@ struct WeekView: View {
                 }
             }
         }
+        .id(refreshTrigger)
+        .onAppear {
+            scheduleRefresh(every: 2 * 60 * 60)
+        }
+
+    }
+
+    func scheduleRefresh(every interval: TimeInterval) {
+        Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            refreshTrigger = UUID()
+        }
     }
 
     private func getDaysOfWeek(startingFrom date: Date) -> [Date] {
@@ -209,8 +222,6 @@ struct WeekView: View {
         components.second = 0
         return calendar.date(from: components) ?? Date()
     }
-    
-    
 
 }
 
