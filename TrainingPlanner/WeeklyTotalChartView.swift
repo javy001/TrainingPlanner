@@ -11,6 +11,7 @@ import SwiftUI
 struct WeeklyTotalChartView: View {
     @EnvironmentObject var vm: DataController
     @State private var selectedDay: String?
+    let metric: String
 
     var body: some View {
         let data = calculateTotalsByWeek()
@@ -24,7 +25,16 @@ struct WeeklyTotalChartView: View {
                         x: .value("Week", point.weekStart),
                         y: .value("Hours", point.total),
                     )
-                    .foregroundStyle(Sport.swimming.iconColor)
+                    .foregroundStyle(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Sport.swimming.iconColor,
+                                Color.green,
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
 
                 }
                 if !selectedValues.isEmpty {
@@ -40,13 +50,15 @@ struct WeeklyTotalChartView: View {
                                 y: .disabled
                             ),
                             content: {
+                                let label =
+                                    metric == "duration" ? "Hours" : "Miles"
                                 VStack(alignment: .leading) {
                                     Text(
                                         "\(day.weekStart) - \(getDateString(sunday))"
                                     )
                                     .font(.headline)
                                     Text(
-                                        "Total Hours: \(String(format: "%.1f",day.total))"
+                                        "Total \(label): \(String(format: "%.1f",day.total))"
                                     )
                                     .font(.caption)
                                 }
@@ -76,7 +88,9 @@ struct WeeklyTotalChartView: View {
 
         for workout in vm.workouts {
             let weekStart = Utils.mondayOfTheWeek(from: workout.date ?? Date())
-            totalsByWeek[weekStart, default: 0.0] += workout.duration
+            let value =
+                metric == "duration" ? workout.duration : workout.distance
+            totalsByWeek[weekStart, default: 0.0] += value
         }
 
         let totalArray = totalsByWeek.map { (weekStart, total) in

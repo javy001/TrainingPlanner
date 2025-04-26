@@ -104,7 +104,7 @@ struct WeekView: View {
                         .font(.headline)
                         .fontWeight(.bold)
                     }
-                    WeeklyTotalChartView()
+                    WeeklyTotalChartView(metric: metric)
                     
                     Spacer()
                 }
