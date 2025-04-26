@@ -23,6 +23,23 @@ struct Utils {
 
         return calendar.date(from: components) ?? sunday
     }
+    
+    static func mondayOfTheWeek(from date: Date) -> Date {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: date)
+        let daysToMonday = (weekday + 5) % 7
+        let monday =
+            calendar.date(byAdding: .day, value: -daysToMonday, to: date)
+            ?? Date()
+        var components = calendar.dateComponents(
+            [.year, .month, .day],
+            from: monday
+        )
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+        return calendar.date(from: components) ?? Date()
+    }
 
     static func dayNumber(from date: Date) -> String {
         let formatter = DateFormatter()

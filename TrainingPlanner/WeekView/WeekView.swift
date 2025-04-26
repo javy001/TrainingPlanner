@@ -24,7 +24,7 @@ struct WeekView: View {
 
     var body: some View {
 
-        let startOfWeek = mondayOfTheWeek(
+        let startOfWeek = Utils.mondayOfTheWeek(
             from:
                 calendar.date(
                     byAdding: .weekOfYear,
@@ -104,7 +104,8 @@ struct WeekView: View {
                         .font(.headline)
                         .fontWeight(.bold)
                     }
-
+                    WeeklyTotalChartView()
+                    
                     Spacer()
                 }
             }
@@ -205,22 +206,6 @@ struct WeekView: View {
     private func longDayFormat(from date: Date) -> String {
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
-    }
-
-    private func mondayOfTheWeek(from date: Date) -> Date {
-        let weekday = calendar.component(.weekday, from: date)
-        let daysToMonday = (weekday + 5) % 7
-        let monday =
-            calendar.date(byAdding: .day, value: -daysToMonday, to: date)
-            ?? Date()
-        var components = calendar.dateComponents(
-            [.year, .month, .day],
-            from: monday
-        )
-        components.hour = 0
-        components.minute = 0
-        components.second = 0
-        return calendar.date(from: components) ?? Date()
     }
 
 }
