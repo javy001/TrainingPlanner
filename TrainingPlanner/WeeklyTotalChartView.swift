@@ -16,6 +16,7 @@ struct WeeklyTotalChartView: View {
     var body: some View {
         let data = calculateTotalsByWeek()
         let selectedValues = data.filter({ $0.weekStart == selectedDay })
+        let day = selectedValues.first
         VStack {
             Text("Weekly Totals")
                 .font(.headline)
@@ -34,6 +35,10 @@ struct WeeklyTotalChartView: View {
                             startPoint: .top,
                             endPoint: .bottom
                         )
+                    )
+                    .opacity(
+                        day?.weekStart == point.weekStart || selectedDay == nil
+                            ? 1 : 0.3
                     )
 
                 }
