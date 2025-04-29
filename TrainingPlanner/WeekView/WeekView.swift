@@ -76,7 +76,7 @@ struct WeekView: View {
                         days: daysOfWeek
                     )
                     .padding(.vertical, 20)
-//                    Spacer()
+                    //                    Spacer()
                     VStack(alignment: .leading) {
                         let metricLabel =
                             metric == "duration" ? "hours" : "miles"
@@ -103,7 +103,8 @@ struct WeekView: View {
                         .fontWeight(.bold)
                     }
                     WeeklyTotalChartView(metric: metric)
-                    
+
+                    Spacer()
                     Spacer()
                 }
             }

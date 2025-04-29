@@ -53,8 +53,10 @@ struct AddWorkoutView: View {
                         }
                     }
                     DatePicker(
-                        "Workout Date", selection: $date,
-                        displayedComponents: .date)
+                        "Workout Date",
+                        selection: $date,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
 
                 }
                 Section(type == "Swimming" ? "Yards" : "Miles") {
@@ -77,13 +79,13 @@ struct AddWorkoutView: View {
                         }
                     }
                 }
-                
+
                 Section("Notes") {
                     TextEditor(text: $notes)
                         .frame(minHeight: 120)
                         .focused($isFocused)
                 }
-                
+
                 Section {
                     Button("Save") {
                         var convertedDistance = Double(distance) ?? 0
@@ -92,8 +94,12 @@ struct AddWorkoutView: View {
                         }
                         if workout == nil {
                             vm.addWorkout(
-                                date: date, type: type, duration: duration,
-                                distance: "\(convertedDistance)", notes: notes)
+                                date: date,
+                                type: type,
+                                duration: duration,
+                                distance: "\(convertedDistance)",
+                                notes: notes
+                            )
                         } else {
                             workout!.date = date
                             workout!.type = type

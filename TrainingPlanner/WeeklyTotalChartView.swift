@@ -10,12 +10,12 @@ import SwiftUI
 
 struct WeeklyTotalChartView: View {
     @EnvironmentObject var vm: DataController
-    @State private var selectedDay: String?
+    @State private var selectedDay: Date?
     let metric: String
 
     var body: some View {
         let data = calculateTotalsByWeek()
-        let selectedValues = data.filter({ $0.weekStart == selectedDay })
+        let selectedValues = data.filter({ $0.date == Utils.mondayOfTheWeek(from: selectedDay ?? Date()) && selectedDay != nil})
         let day = selectedValues.first
         VStack {
             Text("Weekly Totals")
@@ -23,7 +23,7 @@ struct WeeklyTotalChartView: View {
             Chart {
                 ForEach(data, id: \.weekStart) { point in
                     BarMark(
-                        x: .value("Week", point.weekStart),
+                        x: .value("Week", point.date),
                         y: .value("Hours", point.total),
                     )
                     .foregroundStyle(
@@ -46,7 +46,7 @@ struct WeeklyTotalChartView: View {
                     let day = selectedValues.first!
                     let sunday = Utils.sundayOfTheWeek(from: day.date)
 
-                    RuleMark(x: .value("Week", day.weekStart))
+                    RuleMark(x: .value("Week", day.date))
                         .foregroundStyle(Color(.gray))
                         .annotation(
                             position: .top,
@@ -89,6 +89,7 @@ struct WeeklyTotalChartView: View {
     private func calculateTotalsByWeek() -> [(
         weekStart: String, total: Double, date: Date
     )] {
+        let calendar = Calendar.current
         var totalsByWeek: [Date: Double] = [:]
 
         for workout in vm.workouts {
@@ -98,9 +99,24 @@ struct WeeklyTotalChartView: View {
             totalsByWeek[weekStart, default: 0.0] += value
         }
 
+        let sixMonthsAgo = calendar.date(
+            byAdding: .month,
+            value: -4,
+            to: Date()
+        )!
+        var week = Utils.mondayOfTheWeek(from: sixMonthsAgo)
+        var endDate = vm.workouts.last?.date ?? Date()
+        if endDate < Date() {
+            endDate = Date()
+        }
+        while week <= endDate {
+            if totalsByWeek[week] == nil {
+                totalsByWeek[week] = 0
+            }
+            week = calendar.date(byAdding: .day, value: 7, to: week)!
+        }
+
         let totalArray = totalsByWeek.map { (weekStart, total) in
-            //            let formatter = DateFormatter()
-            //            formatter.dateFormat = "MMM dd"
             return (
                 weekStart: getDateString(weekStart), total: total,
                 date: weekStart
