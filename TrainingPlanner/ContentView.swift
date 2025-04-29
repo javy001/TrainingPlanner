@@ -10,11 +10,22 @@ import SwiftUI
 struct ContentView: View {
     @State private var weekOffset: Int = 0
     @State private var showBlur: Bool = false
+    @State private var selectedDate: Date = Date()
 
     var body: some View {
         NavigationView {
             ZStack {
                 VStack {
+                    DatePicker(
+                        "Go to week",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+                    .padding()
+                    .onChange(of: selectedDate) {
+                        handleDateSelection(selectedDate)
+                    }
+
                     WeekView(weekOffset: weekOffset)
                         .animation(.easeInOut(duration: 0.5), value: weekOffset)
                         .toolbar {
@@ -82,11 +93,37 @@ struct ContentView: View {
     }
 
     private func handleSwipe(value: Int) {
-        showBlur = true
+        let date =
+            Calendar.current.date(
+                byAdding: .day,
+                value: 7 * (weekOffset + value),
+                to: Date()
+            ) ?? Date()
+        selectedDate = Utils.mondayOfTheWeek(from: date)
         weekOffset += value
+        animateChange()
+
+    }
+
+    private func animateChange() {
+        showBlur = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.showBlur = false
         }
+    }
+
+    private func handleDateSelection(_ date: Date) {
+        let calendar = Calendar.current
+        let day0 = Utils.mondayOfTheWeek(from: Date())
+        let day1 = Utils.mondayOfTheWeek(from: date)
+        let daysFromToday =
+            calendar.dateComponents(
+                [.day],
+                from: day0,
+                to: day1
+            ).day ?? 0
+        weekOffset = daysFromToday / 7
+        animateChange()
     }
 }
 

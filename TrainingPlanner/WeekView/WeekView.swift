@@ -14,6 +14,8 @@ struct WeekView: View {
     @State private var showDeleteConfirm: Bool = false
     @State private var metric: String = "duration"
 
+    @State private var refreshTrigger = UUID()
+
     let weekOffset: Int
 
     private let calendar = Calendar.current
@@ -22,7 +24,7 @@ struct WeekView: View {
 
     var body: some View {
 
-        let startOfWeek = mondayOfTheWeek(
+        let startOfWeek = Utils.mondayOfTheWeek(
             from:
                 calendar.date(
                     byAdding: .weekOfYear,
@@ -74,9 +76,7 @@ struct WeekView: View {
                         days: daysOfWeek
                     )
                     .padding(.vertical, 20)
-
-                    Spacer()
-
+                    //                    Spacer()
                     VStack(alignment: .leading) {
                         let metricLabel =
                             metric == "duration" ? "hours" : "miles"
@@ -102,7 +102,9 @@ struct WeekView: View {
                         .font(.headline)
                         .fontWeight(.bold)
                     }
+                    WeeklyTotalChartView(metric: metric)
 
+                    Spacer()
                     Spacer()
                 }
             }
@@ -176,6 +178,17 @@ struct WeekView: View {
                 }
             }
         }
+        .id(refreshTrigger)
+        .onAppear {
+            scheduleRefresh(every: 2 * 60 * 60)
+        }
+
+    }
+
+    func scheduleRefresh(every interval: TimeInterval) {
+        Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+            refreshTrigger = UUID()
+        }
     }
 
     private func getDaysOfWeek(startingFrom date: Date) -> [Date] {
@@ -193,24 +206,6 @@ struct WeekView: View {
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
     }
-
-    private func mondayOfTheWeek(from date: Date) -> Date {
-        let weekday = calendar.component(.weekday, from: date)
-        let daysToMonday = (weekday + 5) % 7
-        let monday =
-            calendar.date(byAdding: .day, value: -daysToMonday, to: date)
-            ?? Date()
-        var components = calendar.dateComponents(
-            [.year, .month, .day],
-            from: monday
-        )
-        components.hour = 0
-        components.minute = 0
-        components.second = 0
-        return calendar.date(from: components) ?? Date()
-    }
-    
-    
 
 }
 

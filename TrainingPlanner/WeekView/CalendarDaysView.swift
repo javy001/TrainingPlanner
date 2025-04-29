@@ -11,33 +11,40 @@ struct CalendarDaysView: View {
     @EnvironmentObject var vm: DataController
     var daysOfWeek: [Date]
     var metric: String
-    
+
     let calendar = Calendar.current
     let currentDate: Date = Date()
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 5) {
             ForEach(daysOfWeek, id: \.self) { day in
                 // days of the week
                 let workouts = vm.workouts.filter {
                     calendar.isDate(
-                        $0.date ?? Date(), inSameDayAs: day)
-                }
+                        $0.date ?? Date(),
+                        inSameDayAs: day
+                    )
+
+                }.sorted { $0.date ?? Date() < $1.date ?? Date() }
                 let isToday = calendar.isDate(
-                    day, inSameDayAs: currentDate)
+                    day,
+                    inSameDayAs: currentDate
+                )
 
                 VStack {
                     Text(Utils.dayNumber(from: day))
                         .font(.caption)
                         .fontWeight(isToday ? .bold : .regular)
                         .foregroundStyle(
-                            isToday ? Color.accentColor : .primary)
+                            isToday ? Color.accentColor : .primary
+                        )
 
                     Text(Utils.dateString(from: day))
                         .font(.headline)
                         .fontWeight(isToday ? .bold : .regular)
                         .foregroundStyle(
-                            isToday ? Color.accentColor : .primary)
+                            isToday ? Color.accentColor : .primary
+                        )
 
                     DayView(workouts: workouts, metric: metric)
                 }

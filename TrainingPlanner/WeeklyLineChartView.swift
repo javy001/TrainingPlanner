@@ -41,14 +41,20 @@ struct WeeklyLineChartView: View {
                             ),
                             content: {
                                 VStack(alignment: .leading) {
-                                    Text("\(Utils.getLongDayString(from: day.x))")
-                                        .font(.headline)
+                                    Text(
+                                        "\(Utils.getLongDayString(from: day.x))"
+                                    )
+                                    .font(.headline)
                                     ForEach(selectedValues, id: \.type) {
                                         selectedValue in
                                         var yVal = selectedValue.y
                                         var label = metric
-                                        if selectedValue.type == "Swimming" && metric == "Miles" {
-                                            yVal = Utils.milesToYards(from: yVal)
+                                        if selectedValue.type == "Swimming"
+                                            && metric == "Miles"
+                                        {
+                                            yVal = Utils.milesToYards(
+                                                from: yVal
+                                            )
                                             label = "Yards"
                                         }
                                         return HStack {
