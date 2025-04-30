@@ -28,7 +28,9 @@ struct AddWorkoutView: View {
             distance *= 1760
         }
         let totalMinutes = (workout?.duration ?? 0) * 60
-        _date = State(initialValue: workout?.date ?? startDate ?? Date())
+        let thisMonday = Utils.mondayOfTheWeek(from: Date())
+        let initialDate = startDate == thisMonday ? Date() : startDate
+        _date = State(initialValue: workout?.date ?? initialDate ?? Date())
         _type = State(initialValue: workout?.type ?? "Swimming")
         //        _duration = State(initialValue: "\(workout?.duration ?? 0 )")
         _distance = State(initialValue: "\(distance)")
@@ -65,17 +67,14 @@ struct AddWorkoutView: View {
                         .focused($isFocused)
                 }
                 Section("Time") {
-                    HStack {
-                        Picker("Hours", selection: $hours) {
-                            ForEach(0...23, id: \.self) {
-                                Text("\($0)")
-                            }
+                    Picker("Hours", selection: $hours) {
+                        ForEach(0...23, id: \.self) {
+                            Text("\($0)")
                         }
-                        Text(" : ")
-                        Picker("Minutes", selection: $minutes) {
-                            ForEach(0...59, id: \.self) {
-                                Text("\($0)")
-                            }
+                    }
+                    Picker("Minutes", selection: $minutes) {
+                        ForEach(0...59, id: \.self) {
+                            Text("\($0)")
                         }
                     }
                 }
