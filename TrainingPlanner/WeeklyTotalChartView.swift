@@ -69,15 +69,22 @@ struct WeeklyTotalChartView: View {
                             content: {
                                 let label =
                                 metric == "duration" ? "Hours" : "Miles"
-                                VStack(alignment: .leading) {
+                                let unit = metric == "duration" ? "hrs" : "mi"
+                                VStack(alignment: .leading, spacing: 4) {
                                     Text(
                                         "\(day.weekStart) - \(getDateString(sunday))"
                                     )
                                     .font(.headline)
                                     Text(
-                                        "Total \(label): \(String(format: "%.1f",day.total))"
+                                        "Total \(label): \(String(format: "%.1f", day.total))"
                                     )
-                                    .font(.caption)
+                                    .font(.subheadline)
+                                    Text("Swimming: \(String(format: "%.1f", day.swimming)) \(unit)")
+                                        .font(.caption)
+                                    Text("Cycling: \(String(format: "%.1f", day.cycling)) \(unit)")
+                                        .font(.caption)
+                                    Text("Running: \(String(format: "%.1f", day.running)) \(unit)")
+                                        .font(.caption)
                                 }
                                 .padding()
                                 .background(Color(.systemGray4))
@@ -99,10 +106,11 @@ struct WeeklyTotalChartView: View {
     }
     
     private func calculateTotalsByWeek() -> [(
-        weekStart: String, total: Double, date: Date
+        weekStart: String, total: Double, date: Date,
+        swimming: Double, cycling: Double, running: Double
     )] {
         let calendar = Calendar.current
-        var totalsByWeek: [Date: Double] = [:]
+        var totalsByWeek: [Date: (total: Double, swimming: Double, cycling: Double, running: Double)] = [:]
         var week = Utils.mondayOfTheWeek(from: startDate)
         
         for workout in vm.workouts {
@@ -110,23 +118,34 @@ struct WeeklyTotalChartView: View {
             if weekStart < week || weekStart > endDate {
                 continue
             }
-            let value =
-            metric == "duration" ? workout.duration : workout.distance
-            totalsByWeek[weekStart, default: 0.0] += value
+            let value = metric == "duration" ? workout.duration : workout.distance
+            let type = workout.type ?? ""
+            var entry = totalsByWeek[weekStart] ?? (0, 0, 0, 0)
+            entry.total += value
+            switch type {
+            case "Swimming": entry.swimming += value
+            case "Cycling": entry.cycling += value
+            case "Running": entry.running += value
+            default: break
+            }
+            totalsByWeek[weekStart] = entry
         }
 
         while week <= endDate {
-//            filling missing weeks
             if totalsByWeek[week] == nil {
-                totalsByWeek[week] = 0
+                totalsByWeek[week] = (0, 0, 0, 0)
             }
             week = calendar.date(byAdding: .day, value: 7, to: week)!
         }
         
-        let totalArray = totalsByWeek.map { (weekStart, total) in
-            return (
-                weekStart: getDateString(weekStart), total: total,
-                date: weekStart
+        let totalArray = totalsByWeek.map { (weekStart, entry) in
+            (
+                weekStart: getDateString(weekStart),
+                total: entry.total,
+                date: weekStart,
+                swimming: entry.swimming,
+                cycling: entry.cycling,
+                running: entry.running
             )
         }.sorted { $0.date < $1.date }
         

@@ -9,7 +9,8 @@ import CoreData
 import Foundation
 
 class DataController: ObservableObject {
-    let container = NSPersistentContainer(name: "TrainingPlanner")
+    /// Uses NSPersistentCloudKitContainer so data syncs to iCloud when the app has the iCloud + CloudKit capability.
+    let container = NSPersistentCloudKitContainer(name: "TrainingPlanner")
     @Published var workouts: [Workout] = []
     @Published var fetchedTime = Date()
 
@@ -20,6 +21,21 @@ class DataController: ObservableObject {
             }
         }
         fetchData()
+        setupCloudKitSyncObserver()
+    }
+
+    /// Refetch when CloudKit import/export completes so the UI stays in sync across devices.
+    private func setupCloudKitSyncObserver() {
+        NotificationCenter.default.addObserver(
+            forName: NSPersistentCloudKitContainer.eventChangedNotification,
+            object: container,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self,
+                  let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey] as? NSPersistentCloudKitContainer.Event,
+                  event.endDate != nil else { return }
+            self.fetchData()
+        }
     }
 
     func fetchData() {
