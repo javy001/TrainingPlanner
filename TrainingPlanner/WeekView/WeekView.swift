@@ -17,6 +17,8 @@ struct WeekView: View {
     @State private var refreshTrigger = UUID()
 
     let weekOffset: Int
+    var onImportFromHealth: (() -> Void)? = nil
+    var isImportingHealth: Bool = false
 
     private let calendar = Calendar.current
     private let formatter = DateFormatter()
@@ -122,6 +124,12 @@ struct WeekView: View {
                                 systemImage: "trash"
                             )
                         }
+                        if let onImport = onImportFromHealth {
+                            Button(action: onImport) {
+                                Label("Import from Health", systemImage: "heart.fill")
+                            }
+                            .disabled(isImportingHealth)
+                        }
                         Button(action: {
                             showCopySheet = true
                         }) {
@@ -136,13 +144,17 @@ struct WeekView: View {
                             Label("Add workout", systemImage: "plus")
                         }
                     } label: {
-                        Circle()
-                            .fill(Color.accentColor)
-                            .frame(width: 35, height: 35)
-                            .overlay(Image(systemName: "plus"))
-                            .foregroundColor(.black)
-
+                        ZStack {
+                            Circle()
+                                .fill(Color.accentColor)
+                                .frame(width: 35, height: 35)
+                            Image(systemName: "plus")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundStyle(.black)
+                        }
                     }
+                    .buttonStyle(.plain)
+                    .menuStyle(.borderlessButton)
                     .sheet(
                         isPresented: $showAddSheet,
                         content: {

@@ -23,7 +23,12 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXBuildFile section */
+		3F85C4F02D8DED0B0028DE98 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F85C4F12D8DED0B0028DE98 /* HealthKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		3F85C4F12D8DED0B0028DE98 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		3F85C41E2D8DED0A0028DE98 /* TrainingPlanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrainingPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F85C42F2D8DED0B0028DE98 /* TrainingPlannerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrainingPlannerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F85C4392D8DED0B0028DE98 /* TrainingPlannerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrainingPlannerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3F85C4F02D8DED0B0028DE98 /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -402,6 +408,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "TrainingPlanner uses your workout data from Apple Health to add running, cycling, and swimming workouts to your plan.";
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "@ 2025 Javier Quintero. All Rights reserved";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -446,6 +454,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "TrainingPlanner uses your workout data from Apple Health to add running, cycling, and swimming workouts to your plan.";
+				INFOPLIST_KEY_UIBackgroundModes = "remote-notification";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "@ 2025 Javier Quintero. All Rights reserved";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

@@ -8,12 +8,23 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var vm: DataController
     @State private var weekOffset: Int = 0
     @State private var showBlur: Bool = false
     @State private var selectedDate: Date = Date()
+    @State private var isImportingHealth = false
+    @State private var importResult: String?
+    @State private var showImportAlert = false
+    @State private var showImportOptionsSheet = false
+    @State private var importDaysOption = 90
+    @State private var useCustomDateRange = false
+    @State private var importStartDate = Calendar.current.date(byAdding: .day, value: -90, to: Date()) ?? Date()
+    @State private var importEndDate = Date()
+    @State private var hasRunLaunchImport = false
+    private let importDaysChoices = [7, 14, 30, 90, 180]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 VStack {
                     DatePicker(
@@ -26,7 +37,11 @@ struct ContentView: View {
                         handleDateSelection(selectedDate)
                     }
 
-                    WeekView(weekOffset: weekOffset)
+                    WeekView(
+                        weekOffset: weekOffset,
+                        onImportFromHealth: { showImportOptionsSheet = true },
+                        isImportingHealth: isImportingHealth
+                    )
                         .animation(.easeInOut(duration: 0.5), value: weekOffset)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
@@ -70,6 +85,19 @@ struct ContentView: View {
                         .animation(.easeInOut, value: showBlur)
                 }
             }
+        }
+        .sheet(isPresented: $showImportOptionsSheet) {
+            importFromHealthSheet
+        }
+        .alert("Import from Health", isPresented: $showImportAlert) {
+            Button("OK", role: .cancel) { importResult = nil }
+        } message: {
+            if let result = importResult {
+                Text(result)
+            }
+        }
+        .task {
+            await fetchLastSevenDaysFromHealth()
         }
         .gesture(
             DragGesture()
@@ -124,6 +152,91 @@ struct ContentView: View {
             ).day ?? 0
         weekOffset = daysFromToday / 7
         animateChange()
+    }
+
+    private var importFromHealthSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Toggle("Custom date range", isOn: $useCustomDateRange)
+                }
+
+                if useCustomDateRange {
+                    Section("Date range") {
+                        DatePicker("From", selection: $importStartDate, in: ...importEndDate, displayedComponents: .date)
+                        DatePicker("To", selection: $importEndDate, in: importStartDate..., displayedComponents: .date)
+                    }
+                } else {
+                    Section {
+                        Picker("Import from last", selection: $importDaysOption) {
+                            ForEach(importDaysChoices, id: \.self) { days in
+                                Text("\(days) days").tag(days)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                }
+
+                Section {} footer: {
+                    Text("Running, cycling, and swimming workouts in this period will be added. Already imported workouts are skipped.")
+                }
+            }
+            .navigationTitle("Import from Health")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        showImportOptionsSheet = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Import") {
+                        showImportOptionsSheet = false
+                        let (start, end) = useCustomDateRange
+                            ? (importStartDate, importEndDate)
+                            : (Calendar.current.date(byAdding: .day, value: -importDaysOption, to: Date()) ?? Date(), Date())
+                        runImportFromHealth(from: start, to: end)
+                    }
+                    .disabled(isImportingHealth)
+                }
+            }
+        }
+    }
+
+    /// Fetches the last 7 days from Apple Health once at launch (silent, no alert).
+    private func fetchLastSevenDaysFromHealth() async {
+        guard !hasRunLaunchImport else { return }
+        hasRunLaunchImport = true
+        let end = Date()
+        let start = Calendar.current.date(byAdding: .day, value: -7, to: end) ?? end
+        do {
+            _ = try await vm.importFromHealth(from: start, to: end)
+        } catch {
+            // Silent on launch; user can use Import from Health menu if needed.
+        }
+    }
+
+    private func runImportFromHealth(from start: Date, to end: Date) {
+        guard !isImportingHealth else { return }
+        isImportingHealth = true
+        Task {
+            do {
+                let added = try await vm.importFromHealth(from: start, to: end)
+                await MainActor.run {
+                    isImportingHealth = false
+                    importResult = added > 0
+                        ? "Imported \(added) workout\(added == 1 ? "" : "s") from Apple Health."
+                        : "No new workouts found in the selected period, or you've already imported them."
+                    showImportAlert = true
+                }
+            } catch {
+                await MainActor.run {
+                    isImportingHealth = false
+                    importResult = "Could not import: \(error.localizedDescription)"
+                    showImportAlert = true
+                }
+            }
+        }
     }
 }
 
