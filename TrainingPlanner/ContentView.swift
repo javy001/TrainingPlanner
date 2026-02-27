@@ -21,6 +21,8 @@ struct ContentView: View {
     @State private var importStartDate = Calendar.current.date(byAdding: .day, value: -90, to: Date()) ?? Date()
     @State private var importEndDate = Date()
     @State private var hasRunLaunchImport = false
+    @State private var showLaunchImportAlert = false
+    @State private var launchImportAddedCount = 0
     private let importDaysChoices = [7, 14, 30, 90, 180]
 
     var body: some View {
@@ -95,6 +97,11 @@ struct ContentView: View {
             if let result = importResult {
                 Text(result)
             }
+        }
+        .alert("Apple Health", isPresented: $showLaunchImportAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("\(launchImportAddedCount) workout\(launchImportAddedCount == 1 ? "" : "s") added from Apple Health.")
         }
         .task {
             await fetchLastSevenDaysFromHealth()
@@ -203,14 +210,20 @@ struct ContentView: View {
         }
     }
 
-    /// Fetches the last 7 days from Apple Health once at launch (silent, no alert).
+    /// Fetches the last 7 days from Apple Health once at launch. Shows an alert if any workouts were added.
     private func fetchLastSevenDaysFromHealth() async {
         guard !hasRunLaunchImport else { return }
         hasRunLaunchImport = true
         let end = Date()
         let start = Calendar.current.date(byAdding: .day, value: -7, to: end) ?? end
         do {
-            _ = try await vm.importFromHealth(from: start, to: end)
+            let added = try await vm.importFromHealth(from: start, to: end)
+            if added > 0 {
+                await MainActor.run {
+                    launchImportAddedCount = added
+                    showLaunchImportAlert = true
+                }
+            }
         } catch {
             // Silent on launch; user can use Import from Health menu if needed.
         }
