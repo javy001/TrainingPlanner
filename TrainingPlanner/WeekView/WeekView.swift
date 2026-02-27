@@ -10,10 +10,10 @@ import SwiftUI
 struct WeekView: View {
     @EnvironmentObject var vm: DataController
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
+    @AppStorage("defaultMetric") private var metric: String = "duration"
     @State private var showAddSheet: Bool = false
     @State private var showCopySheet: Bool = false
     @State private var showDeleteConfirm: Bool = false
-    @State private var metric: String = "duration"
 
     @State private var refreshTrigger = UUID()
 

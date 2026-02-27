@@ -105,9 +105,4 @@ extension HKWorkout {
         if name.localizedCaseInsensitiveContains("Garmin") { return "Garmin" }
         return name
     }
-
-    /// Notes string for an imported workout: imported from Health + source.
-    var importedFromHealthNotes: String {
-        "Imported from Apple Health. Source: \(sourceDisplayName)"
-    }
 }

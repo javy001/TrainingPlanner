@@ -106,15 +106,11 @@ class DataController: ObservableObject {
                 return durationMatch && distanceMatch
             }
 
-            let importedNotes = hk.importedFromHealthNotes
             if let workout = existing, let id = workout.id {
                 workout.date = hk.startDate
                 workout.duration = values.durationHours
                 workout.distance = values.distanceMiles
-                let existingNotes = workout.notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                workout.notes = existingNotes.isEmpty
-                    ? importedNotes
-                    : "\(importedNotes)\n\n\(existingNotes)"
+                // Retain existing notes when updating a matched workout (user overrides are preserved).
                 workout.healthKitUUID = uuidString
                 matchedWorkoutIDs.insert(id)
                 importedCount += 1
@@ -124,7 +120,7 @@ class DataController: ObservableObject {
                 workout.type = values.type
                 workout.duration = values.durationHours
                 workout.distance = values.distanceMiles
-                workout.notes = importedNotes
+                workout.notes = nil
                 workout.id = UUID()
                 workout.healthKitUUID = uuidString
                 importedCount += 1

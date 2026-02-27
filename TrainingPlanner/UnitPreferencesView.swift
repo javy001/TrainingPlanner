@@ -15,6 +15,7 @@ enum UnitSystem: String, CaseIterable {
 
 struct UnitPreferencesView: View {
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
+    @AppStorage("defaultMetric") private var defaultMetric: String = "duration"
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -31,8 +32,19 @@ struct UnitPreferencesView: View {
                 } footer: {
                     Text("Metric uses kilometers and meters. Imperial uses miles and yards. Time is always in hours.")
                 }
+                Section {
+                    Picker("Default view", selection: $defaultMetric) {
+                        Text("Time").tag("duration")
+                        Text("Distance").tag("distance")
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Default Metric")
+                } footer: {
+                    Text("Whether to show the data in distance or time when the app first opens")
+                }
             }
-            .navigationTitle("Units")
+            .navigationTitle("App Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

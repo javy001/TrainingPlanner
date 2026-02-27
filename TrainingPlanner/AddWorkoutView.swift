@@ -48,6 +48,13 @@ struct AddWorkoutView: View {
         let duration = "\(Double(hours) + (Double(minutes) / 60.0))"
         NavigationView {
             Form {
+                if workout?.healthKitUUID != nil {
+                    Section {
+                        Label("Imported from Apple Health", systemImage: "heart.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Section {
                     Picker("Workout Type", selection: $type) {
                         ForEach(sports, id: \.self) {
