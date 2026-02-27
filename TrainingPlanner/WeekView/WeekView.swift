@@ -9,6 +9,7 @@ import SwiftUI
 
 struct WeekView: View {
     @EnvironmentObject var vm: DataController
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
     @State private var showAddSheet: Bool = false
     @State private var showCopySheet: Bool = false
     @State private var showDeleteConfirm: Bool = false
@@ -80,26 +81,26 @@ struct WeekView: View {
                     .padding(.vertical, 20)
                     //                    Spacer()
                     VStack(alignment: .leading) {
-                        let metricLabel =
-                            metric == "duration" ? "hours" : "miles"
-                        let swimMetric =
-                            metric == "distance"
-                            ? Utils.milesToYards(from: swimmingHours)
-                            : swimmingHours
+                        let (distanceUnit, swimUnit): (String, String) = useMetricUnits ? ("km", "m") : ("mi", "yd")
+                        let metricLabel = metric == "duration" ? "hours" : distanceUnit
+                        let swimDisplay: (value: Double, unit: String) = metric == "distance"
+                            ? Utils.swimmingDistanceDisplay(miles: swimmingHours, useMetric: useMetricUnits)
+                            : (value: swimmingHours, unit: "hours")
+                        let swimLabel = metric == "duration" ? "hours" : swimUnit
                         Text(
-                            "\(String(format: "%.2f", swimMetric)) \(metric == "duration" ? "hours" : "yards") swimming"
+                            "\(String(format: "%.2f", swimDisplay.value)) \(swimLabel) swimming"
                         )
                         .font(.footnote)
                         Text(
-                            "\(String(format: "%.2f", cyclingHours)) \(metricLabel) cycling"
+                            "\(String(format: "%.2f", metric == "distance" ? Utils.distanceDisplay(miles: cyclingHours, useMetric: useMetricUnits).value : cyclingHours)) \(metricLabel) cycling"
                         )
                         .font(.footnote)
                         Text(
-                            "\(String(format: "%.2f", runningHours)) \(metricLabel) running"
+                            "\(String(format: "%.2f", metric == "distance" ? Utils.distanceDisplay(miles: runningHours, useMetric: useMetricUnits).value : runningHours)) \(metricLabel) running"
                         )
                         .font(.footnote)
                         Text(
-                            "\(String(format: "%.2f", totalHours)) \(metricLabel) total"
+                            "\(String(format: "%.2f", metric == "duration" ? totalHours : Utils.distanceDisplay(miles: totalHours, useMetric: useMetricUnits).value)) \(metricLabel) total"
                         )
                         .font(.headline)
                         .fontWeight(.bold)

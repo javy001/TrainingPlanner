@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SportDetailView: View {
     @ObservedObject var workout: Workout
-    
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
+
     let formatter = DateFormatter()
 
     var body: some View {
@@ -48,11 +49,13 @@ struct SportDetailView: View {
     }
 
     private func formatDistance(from distance: Double?) -> String {
+        let miles = distance ?? 0
         if workout.type == "Swimming" {
-            let yards = (distance ?? 0) * 1760
-            return "\(String(format: "%.2f", yards)) yds"
+            let (val, unit) = Utils.swimmingDistanceDisplay(miles: miles, useMetric: useMetricUnits)
+            return "\(String(format: "%.2f", val)) \(unit)"
         } else {
-            return "\(String(format: "%.2f", distance ?? 0)) miles"
+            let (val, unit) = Utils.distanceDisplay(miles: miles, useMetric: useMetricUnits)
+            return "\(String(format: "%.2f", val)) \(unit)"
         }
     }
 }

@@ -57,6 +57,40 @@ struct Utils {
         return miles * 1760
     }
 
+    // MARK: - Metric / Imperial conversions (distances stored in miles internally)
+    static func milesToKm(_ miles: Double) -> Double {
+        miles * 1.60934
+    }
+
+    static func kmToMiles(_ km: Double) -> Double {
+        km / 1.60934
+    }
+
+    static func yardsToMeters(_ yards: Double) -> Double {
+        yards * 0.9144
+    }
+
+    static func metersToYards(_ meters: Double) -> Double {
+        meters / 0.9144
+    }
+
+    /// For cycling/running: returns (displayValue, unitLabel) based on useMetricUnits.
+    static func distanceDisplay(miles: Double, useMetric: Bool) -> (value: Double, unit: String) {
+        if useMetric {
+            return (milesToKm(miles), "km")
+        }
+        return (miles, "mi")
+    }
+
+    /// For swimming (stored as miles): returns (displayValue, unitLabel). Imperial = yards, metric = meters.
+    static func swimmingDistanceDisplay(miles: Double, useMetric: Bool) -> (value: Double, unit: String) {
+        let yards = milesToYards(from: miles)
+        if useMetric {
+            return (yardsToMeters(yards), "m")
+        }
+        return (yards, "yd")
+    }
+
     static func formatNumber(_ num: Double) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct DayView: View {
     @EnvironmentObject var vm: DataController
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
     @State private var tappedWorkout: Workout?
     @State private var showAddWorkoutSheet: Bool = false
     var workouts: [Workout]
@@ -29,12 +30,10 @@ struct DayView: View {
                             }
                         )
                     if metric == "distance" {
-                        let val =
-                            sport == .swimming
-                            ? Utils.milesToYards(from: workout.distance)
-                            : workout.distance
-                        let label = sport == .swimming ? "" : "mi"
-                        Text("\(Utils.formatNumber(val))\(label)")
+                        let (val, label) = sport == .swimming
+                            ? Utils.swimmingDistanceDisplay(miles: workout.distance, useMetric: useMetricUnits)
+                            : Utils.distanceDisplay(miles: workout.distance, useMetric: useMetricUnits)
+                        Text("\(Utils.formatNumber(val)) \(label)")
                             .font(.caption)
                         if sport == .blank {
                             Text("\(fetchedTime)")

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct WeeklyTotalChartView: View {
     @EnvironmentObject var vm: DataController
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
     @State private var selectedDay: Date?
     @State private var startDate: Date = Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
     @State private var endDate: Date = Date()
@@ -51,17 +52,18 @@ struct WeeklyTotalChartView: View {
             Chart {
                 ForEach(data, id: \.weekStart) { point in
                     let opacity = day?.weekStart == point.weekStart || selectedDay == nil ? 1.0 : 0.3
+                    let displayTotal = metric == "duration" ? point.total : (useMetricUnits ? Utils.milesToKm(point.total) : point.total)
                     if useAreaChart {
                         AreaMark(
                             x: .value("Week", point.date),
-                            y: .value("Hours", point.total)
+                            y: .value("Hours", displayTotal)
                         )
                         .foregroundStyle(chartGradient)
                         .opacity(opacity * 0.7)
                     } else {
                         BarMark(
                             x: .value("Week", point.date),
-                            y: .value("Hours", point.total),
+                            y: .value("Hours", displayTotal),
                         )
                         .foregroundStyle(chartGradient)
                         .opacity(opacity)
@@ -80,9 +82,11 @@ struct WeeklyTotalChartView: View {
                                 y: .disabled
                             ),
                             content: {
-                                let label =
-                                metric == "duration" ? "Hours" : "Miles"
-                                let unit = metric == "duration" ? "hrs" : "mi"
+                                let (distLabel, distUnit) = (metric == "duration") ? ("Hours", "hrs") : (useMetricUnits ? "km" : "Miles", useMetricUnits ? "km" : "mi")
+                                let totalDisplay = metric == "duration" ? day.total : Utils.distanceDisplay(miles: day.total, useMetric: useMetricUnits).value
+                                let swimDisplay = Utils.swimmingDistanceDisplay(miles: day.swimming, useMetric: useMetricUnits)
+                                let cyclingDisplay = Utils.distanceDisplay(miles: day.cycling, useMetric: useMetricUnits)
+                                let runningDisplay = Utils.distanceDisplay(miles: day.running, useMetric: useMetricUnits)
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(
                                         useAreaChart
@@ -91,18 +95,18 @@ struct WeeklyTotalChartView: View {
                                     )
                                     .font(.headline)
                                     Text(
-                                        "Total \(label): \(String(format: "%.1f", day.total))"
+                                        "Total \(distLabel): \(String(format: "%.1f", totalDisplay))"
                                     )
                                     .font(.subheadline)
                                     Text(
                                         metric == "duration"
-                                            ? "Swimming: \(String(format: "%.1f", day.swimming)) \(unit)"
-                                            : "Swimming: \(String(format: "%.1f", Utils.milesToYards(from: day.swimming))) yards"
+                                            ? "Swimming: \(String(format: "%.1f", day.swimming)) \(distUnit)"
+                                            : "Swimming: \(String(format: "%.1f", swimDisplay.value)) \(swimDisplay.unit)"
                                     )
                                         .font(.caption)
-                                    Text("Cycling: \(String(format: "%.1f", day.cycling)) \(unit)")
+                                    Text("Cycling: \(String(format: "%.1f", metric == "duration" ? day.cycling : cyclingDisplay.value)) \(metric == "duration" ? distUnit : cyclingDisplay.unit)")
                                         .font(.caption)
-                                    Text("Running: \(String(format: "%.1f", day.running)) \(unit)")
+                                    Text("Running: \(String(format: "%.1f", metric == "duration" ? day.running : runningDisplay.value)) \(metric == "duration" ? distUnit : runningDisplay.unit)")
                                         .font(.caption)
                                 }
                                 .padding()

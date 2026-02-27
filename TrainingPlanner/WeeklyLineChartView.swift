@@ -49,14 +49,11 @@ struct WeeklyLineChartView: View {
                                         selectedValue in
                                         var yVal = selectedValue.y
                                         var label = metric
-                                        if selectedValue.type == "Swimming"
-                                            && metric == "Miles"
-                                        {
-                                            yVal = Utils.milesToYards(
-                                                from: yVal
-                                            )
+                                        if selectedValue.type == "Swimming", metric == "Miles" {
+                                            yVal = Utils.milesToYards(from: yVal)
                                             label = "Yards"
                                         }
+                                        // When metric == "km", data is already in km
                                         return HStack {
                                             Circle()
                                                 .fill(selectedValue.color)

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChartView: View {
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
     @State private var chartType: String = "line"
 
     var workouts: [Workout]
@@ -25,11 +26,21 @@ struct ChartView: View {
             metric == "duration" ? \.duration : \.distance
         ).reduce(0, +)
 
-        let lineData = Utils.cumulativeMetric(
+        let rawLineData = Utils.cumulativeMetric(
             from: workouts,
             metric: metric,
             days: days
         )
+        let distanceLabel = useMetricUnits ? "km" : "Miles"
+        let lineData = (metric == "distance" && useMetricUnits)
+            ? rawLineData.map { (x: $0.x, y: Utils.milesToKm($0.y), color: $0.color, type: $0.type) }
+            : rawLineData
+
+        let barData: [(x: String, y: Double, color: Color)] = [
+            ("Swimming", metric == "duration" ? swimmingHours : (useMetricUnits ? Utils.milesToKm(swimmingHours) : swimmingHours), Sport.swimming.iconColor),
+            ("Cycling", metric == "duration" ? cyclingHours : (useMetricUnits ? Utils.milesToKm(cyclingHours) : cyclingHours), Sport.cycling.iconColor),
+            ("Running", metric == "duration" ? runningHours : (useMetricUnits ? Utils.milesToKm(runningHours) : runningHours), Sport.running.iconColor),
+        ]
 
         VStack {
             Picker("Chart Type", selection: $chartType) {
@@ -40,27 +51,14 @@ struct ChartView: View {
 
             if chartType == "bar" {
                 WeeklyBarChartView(
-                    data: [
-                        (
-                            x: "Swimming", y: swimmingHours,
-                            color: Sport.swimming.iconColor
-                        ),
-                        (
-                            x: "Cycling", y: cyclingHours,
-                            color: Sport.cycling.iconColor
-                        ),
-                        (
-                            x: "Running", y: runningHours,
-                            color: Sport.running.iconColor
-                        ),
-                    ],
-                    metric: metric == "duration" ? "Hours" : "Miles"
+                    data: barData,
+                    metric: metric == "duration" ? "Hours" : distanceLabel
                 )
                 .padding(.vertical, 20)
             } else {
                 WeeklyLineChartView(
                     data: lineData,
-                    metric: metric == "duration" ? "Hours" : "Miles"
+                    metric: metric == "duration" ? "Hours" : distanceLabel
                 )
             }
 

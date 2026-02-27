@@ -10,6 +10,7 @@ import SwiftUI
 struct AddWorkoutView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var vm: DataController
+    @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
     @FocusState var isFocused: Bool
     let workout: Workout?
 
@@ -23,17 +24,16 @@ struct AddWorkoutView: View {
     @State private var showDeleteConfirm: Bool = false
 
     init(workout: Workout?, startDate: Date?) {
-        var distance = workout?.distance ?? 0.0
+        var displayDistance = workout?.distance ?? 0.0
         if workout?.type == "Swimming" {
-            distance *= 1760
+            displayDistance *= 1760
         }
         let totalMinutes = (workout?.duration ?? 0) * 60
         let thisMonday = Utils.mondayOfTheWeek(from: Date())
         let initialDate = startDate == thisMonday ? Date() : startDate
         _date = State(initialValue: workout?.date ?? initialDate ?? Date())
         _type = State(initialValue: workout?.type ?? "Swimming")
-        //        _duration = State(initialValue: "\(workout?.duration ?? 0 )")
-        _distance = State(initialValue: String(format: "%.2f", distance))
+        _distance = State(initialValue: String(format: "%.2f", displayDistance))
         _hours = State(initialValue: Int(totalMinutes / 60))
         _minutes = State(initialValue: Int(totalMinutes) % 60)
         _notes = State(initialValue: workout?.notes ?? "")
@@ -61,7 +61,7 @@ struct AddWorkoutView: View {
                     )
 
                 }
-                Section(type == "Swimming" ? "Yards" : "Miles") {
+                Section(type == "Swimming" ? (useMetricUnits ? "Meters" : "Yards") : (useMetricUnits ? "km" : "Miles")) {
                     TextField("Distance", text: $distance)
                         .keyboardType(.decimalPad)
                         .focused($isFocused)
@@ -87,9 +87,16 @@ struct AddWorkoutView: View {
 
                 Section {
                     Button("Save") {
-                        var convertedDistance = Double(distance) ?? 0
+                        let input = Double(distance) ?? 0
+                        let convertedDistance: Double
                         if type == "Swimming" {
-                            convertedDistance /= 1760
+                            convertedDistance = useMetricUnits
+                                ? Utils.metersToYards(input) / 1760
+                                : input / 1760
+                        } else {
+                            convertedDistance = useMetricUnits
+                                ? Utils.kmToMiles(input)
+                                : input
                         }
                         if workout == nil {
                             vm.addWorkout(
@@ -137,6 +144,17 @@ struct AddWorkoutView: View {
                 )
             }
             .navigationTitle(Text(title))
+            .onAppear {
+                guard let w = workout else { return }
+                let dist = (w.distance as? NSNumber)?.doubleValue ?? (w.distance as? Double) ?? 0
+                if w.type == "Swimming" {
+                    let (val, _) = Utils.swimmingDistanceDisplay(miles: dist, useMetric: useMetricUnits)
+                    distance = String(format: "%.2f", val)
+                } else {
+                    let (val, _) = Utils.distanceDisplay(miles: dist, useMetric: useMetricUnits)
+                    distance = String(format: "%.2f", val)
+                }
+            }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()

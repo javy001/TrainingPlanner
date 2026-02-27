@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var hasRunLaunchImport = false
     @State private var showLaunchImportAlert = false
     @State private var launchImportAddedCount = 0
+    @State private var showUnitPreferences = false
     private let importDaysChoices = [7, 14, 30, 90, 180]
 
     var body: some View {
@@ -47,10 +48,15 @@ struct ContentView: View {
                         .animation(.easeInOut(duration: 0.5), value: weekOffset)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                Button(action: {
-                                    handleSwipe(value: 1)
-                                }) {
-                                    Image(systemName: "chevron.right")
+                                HStack(spacing: 12) {
+                                    Button(action: { showUnitPreferences = true }) {
+                                        Image(systemName: "gearshape")
+                                    }
+                                    Button(action: {
+                                        handleSwipe(value: 1)
+                                    }) {
+                                        Image(systemName: "chevron.right")
+                                    }
                                 }
                             }
 
@@ -90,6 +96,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showImportOptionsSheet) {
             importFromHealthSheet
+        }
+        .sheet(isPresented: $showUnitPreferences) {
+            UnitPreferencesView()
         }
         .alert("Import from Health", isPresented: $showImportAlert) {
             Button("OK", role: .cancel) { importResult = nil }
