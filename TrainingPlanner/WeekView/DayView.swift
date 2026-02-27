@@ -35,6 +35,9 @@ struct DayView: View {
                             : Utils.distanceDisplay(miles: workout.distance, useMetric: useMetricUnits)
                         Text("\(Utils.formatNumber(val)) \(label)")
                             .font(.caption)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                            .truncationMode(.tail)
                         if sport == .blank {
                             Text("\(fetchedTime)")
                                 .font(.caption)
