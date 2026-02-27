@@ -12,7 +12,7 @@ struct WeeklyTotalChartView: View {
     @EnvironmentObject var vm: DataController
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
     @State private var selectedDay: Date?
-    @State private var startDate: Date = Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
+    @State private var startDate: Date = Calendar.current.date(byAdding: .month, value: -6, to: Date()) ?? Date()
     @State private var endDate: Date = Date()
 
     let metric: String
