@@ -33,7 +33,7 @@ struct AddWorkoutView: View {
         _date = State(initialValue: workout?.date ?? initialDate ?? Date())
         _type = State(initialValue: workout?.type ?? "Swimming")
         //        _duration = State(initialValue: "\(workout?.duration ?? 0 )")
-        _distance = State(initialValue: "\(distance)")
+        _distance = State(initialValue: String(format: "%.2f", distance))
         _hours = State(initialValue: Int(totalMinutes / 60))
         _minutes = State(initialValue: Int(totalMinutes) % 60)
         _notes = State(initialValue: workout?.notes ?? "")

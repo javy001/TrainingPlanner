@@ -13,9 +13,25 @@ struct WeeklyTotalChartView: View {
     @State private var selectedDay: Date?
     @State private var startDate: Date = Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
     @State private var endDate: Date = Date()
-    
+
     let metric: String
-    
+
+    private var chartGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Sport.swimming.iconColor,
+                Color.green,
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+
+    private var useAreaChart: Bool {
+        let months = Calendar.current.dateComponents([.month], from: startDate, to: endDate).month ?? 0
+        return months > 6
+    }
+
     var body: some View {
         let data = calculateTotalsByWeek()
         let selectedValues = data.filter({ $0.date == Utils.mondayOfTheWeek(from: selectedDay ?? Date()) && selectedDay != nil})
@@ -34,25 +50,22 @@ struct WeeklyTotalChartView: View {
             }
             Chart {
                 ForEach(data, id: \.weekStart) { point in
-                    BarMark(
-                        x: .value("Week", point.date),
-                        y: .value("Hours", point.total),
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Sport.swimming.iconColor,
-                                Color.green,
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
+                    let opacity = day?.weekStart == point.weekStart || selectedDay == nil ? 1.0 : 0.3
+                    if useAreaChart {
+                        AreaMark(
+                            x: .value("Week", point.date),
+                            y: .value("Hours", point.total)
                         )
-                    )
-                    .opacity(
-                        day?.weekStart == point.weekStart || selectedDay == nil
-                        ? 1 : 0.3
-                    )
-                    
+                        .foregroundStyle(chartGradient)
+                        .opacity(opacity * 0.7)
+                    } else {
+                        BarMark(
+                            x: .value("Week", point.date),
+                            y: .value("Hours", point.total),
+                        )
+                        .foregroundStyle(chartGradient)
+                        .opacity(opacity)
+                    }
                 }
                 if !selectedValues.isEmpty {
                     let day = selectedValues.first!
@@ -72,14 +85,20 @@ struct WeeklyTotalChartView: View {
                                 let unit = metric == "duration" ? "hrs" : "mi"
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(
-                                        "\(day.weekStart) - \(getDateString(sunday))"
+                                        useAreaChart
+                                            ? "\(getDateStringWithYear(day.date)) - \(getDateStringWithYear(sunday))"
+                                            : "\(day.weekStart) - \(getDateString(sunday))"
                                     )
                                     .font(.headline)
                                     Text(
                                         "Total \(label): \(String(format: "%.1f", day.total))"
                                     )
                                     .font(.subheadline)
-                                    Text("Swimming: \(String(format: "%.1f", day.swimming)) \(unit)")
+                                    Text(
+                                        metric == "duration"
+                                            ? "Swimming: \(String(format: "%.1f", day.swimming)) \(unit)"
+                                            : "Swimming: \(String(format: "%.1f", Utils.milesToYards(from: day.swimming))) yards"
+                                    )
                                         .font(.caption)
                                     Text("Cycling: \(String(format: "%.1f", day.cycling)) \(unit)")
                                         .font(.caption)
@@ -102,6 +121,12 @@ struct WeeklyTotalChartView: View {
     private func getDateString(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM dd"
+        return formatter.string(from: date)
+    }
+
+    private func getDateStringWithYear(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM dd, yyyy"
         return formatter.string(from: date)
     }
     

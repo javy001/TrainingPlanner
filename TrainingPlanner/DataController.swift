@@ -111,7 +111,10 @@ class DataController: ObservableObject {
                 workout.date = hk.startDate
                 workout.duration = values.durationHours
                 workout.distance = values.distanceMiles
-                workout.notes = importedNotes
+                let existingNotes = workout.notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                workout.notes = existingNotes.isEmpty
+                    ? importedNotes
+                    : "\(importedNotes)\n\n\(existingNotes)"
                 workout.healthKitUUID = uuidString
                 matchedWorkoutIDs.insert(id)
                 importedCount += 1
