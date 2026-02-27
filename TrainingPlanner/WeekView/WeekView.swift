@@ -110,6 +110,14 @@ struct WeekView: View {
                     Spacer()
                 }
             }
+            .refreshable {
+                let end = Date()
+                let start = calendar.date(byAdding: .day, value: -7, to: end) ?? end
+                try? await vm.importFromHealth(from: start, to: end)
+                await MainActor.run {
+                    vm.fetchData()
+                }
+            }
             VStack {
                 // floating menu button
                 Spacer()
