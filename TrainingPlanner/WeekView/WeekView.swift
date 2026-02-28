@@ -22,6 +22,7 @@ struct WeekView: View {
     let weekOffset: Int
     var onImportFromHealth: (() -> Void)? = nil
     var isImportingHealth: Bool = false
+    var onSwipeWeek: ((Int) -> Void)? = nil
 
     private let calendar = Calendar.current
     private let formatter = DateFormatter()
@@ -72,7 +73,7 @@ struct WeekView: View {
                         .font(.footnote)
                     }
 
-                    CalendarDaysView(daysOfWeek: daysOfWeek, metric: metric)
+                    CalendarDaysView(daysOfWeek: daysOfWeek, metric: metric, onSwipeWeek: onSwipeWeek)
                         .transition(.scale)
 
                     ChartView(

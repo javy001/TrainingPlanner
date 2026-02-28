@@ -11,6 +11,7 @@ struct CalendarDaysView: View {
     @EnvironmentObject var vm: DataController
     var daysOfWeek: [Date]
     var metric: String
+    var onSwipeWeek: ((Int) -> Void)? = nil
 
     let calendar = Calendar.current
     let currentDate: Date = Date()
@@ -60,6 +61,28 @@ struct CalendarDaysView: View {
         .frame(maxWidth: .infinity)
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 44)
+                .onEnded { value in
+                    let hAmount = value.translation.width
+                    let vAmount = value.translation.height
+                    let minHorizontal: CGFloat = 50
+                    let horizontalDominant = abs(hAmount) > abs(vAmount)
+                    let enoughHorizontal = abs(hAmount) >= minHorizontal
+
+                    guard horizontalDominant, enoughHorizontal else {
+                        return
+                    }
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        if hAmount > 0 {
+                            onSwipeWeek?(-1)
+                        } else {
+                            onSwipeWeek?(1)
+                        }
+                    }
+                }
+        )
     }
 }
 

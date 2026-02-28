@@ -43,7 +43,8 @@ struct ContentView: View {
                     WeekView(
                         weekOffset: weekOffset,
                         onImportFromHealth: { showImportOptionsSheet = true },
-                        isImportingHealth: isImportingHealth
+                        isImportingHealth: isImportingHealth,
+                        onSwipeWeek: { handleSwipe(value: $0) }
                     )
                         .animation(.easeInOut(duration: 0.5), value: weekOffset)
                         .toolbar {
@@ -115,28 +116,6 @@ struct ContentView: View {
         .task {
             await fetchLastSevenDaysFromHealth()
         }
-        .contentShape(Rectangle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 44)
-                .onEnded { value in
-                    let hAmount = value.translation.width
-                    let vAmount = value.translation.height
-                    let minHorizontal: CGFloat = 50
-                    let horizontalDominant = abs(hAmount) > abs(vAmount)
-                    let enoughHorizontal = abs(hAmount) >= minHorizontal
-
-                    guard horizontalDominant, enoughHorizontal else {
-                        return
-                    }
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        if hAmount > 0 {
-                            handleSwipe(value: -1)
-                        } else {
-                            handleSwipe(value: 1)
-                        }
-                    }
-                }
-        )
     }
 
     private func handleSwipe(value: Int) {
