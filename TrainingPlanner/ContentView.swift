@@ -115,23 +115,26 @@ struct ContentView: View {
         .task {
             await fetchLastSevenDaysFromHealth()
         }
-        .gesture(
-            DragGesture()
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 44)
                 .onEnded { value in
                     let hAmount = value.translation.width
                     let vAmount = value.translation.height
+                    let minHorizontal: CGFloat = 50
+                    let horizontalDominant = abs(hAmount) > abs(vAmount)
+                    let enoughHorizontal = abs(hAmount) >= minHorizontal
 
-                    guard abs(hAmount) > abs(vAmount) else {
+                    guard horizontalDominant, enoughHorizontal else {
                         return
                     }
-                    withAnimation {
+                    withAnimation(.easeInOut(duration: 0.25)) {
                         if hAmount > 0 {
                             handleSwipe(value: -1)
-                        } else if hAmount < 0 {
+                        } else {
                             handleSwipe(value: 1)
                         }
                     }
-
                 }
         )
     }

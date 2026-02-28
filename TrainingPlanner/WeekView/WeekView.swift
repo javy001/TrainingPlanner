@@ -10,7 +10,9 @@ import SwiftUI
 struct WeekView: View {
     @EnvironmentObject var vm: DataController
     @AppStorage("useMetricUnits") private var useMetricUnits: Bool = false
-    @AppStorage("defaultMetric") private var metric: String = "duration"
+    @AppStorage("defaultMetric") private var defaultMetric: String = "duration"
+    @State private var metric: String = "duration"
+    @State private var didApplyDefaultMetric: Bool = false
     @State private var showAddSheet: Bool = false
     @State private var showCopySheet: Bool = false
     @State private var showDeleteConfirm: Bool = false
@@ -201,6 +203,10 @@ struct WeekView: View {
         }
         .id(refreshTrigger)
         .onAppear {
+            if !didApplyDefaultMetric {
+                metric = defaultMetric
+                didApplyDefaultMetric = true
+            }
             scheduleRefresh(every: 2 * 60 * 60)
         }
 
