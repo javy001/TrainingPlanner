@@ -48,26 +48,26 @@ struct ContentView: View {
                         .animation(.easeInOut(duration: 0.5), value: weekOffset)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
-                                HStack(spacing: 12) {
-                                    Menu {
-                                        Button {
-                                            showUnitPreferences = true
-                                        } label: {
-                                            Label("App settings", systemImage: "gearshape")
-                                        }
-                                        Button {
-                                            showTrainingZones = true
-                                        } label: {
-                                            Label("Training zones", systemImage: "bolt.fill")
-                                        }
+                                Menu {
+                                    Button {
+                                        showUnitPreferences = true
                                     } label: {
-                                        Image(systemName: "line.3.horizontal")
+                                        Label("App settings", systemImage: "gearshape")
                                     }
-                                    Button(action: {
-                                        handleSwipe(value: 1)
-                                    }) {
-                                        Image(systemName: "chevron.right")
+                                    Button {
+                                        showTrainingZones = true
+                                    } label: {
+                                        Label("Training zones", systemImage: "bolt.fill")
                                     }
+                                } label: {
+                                    Image(systemName: "line.3.horizontal")
+                                }
+                            }
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: {
+                                    handleSwipe(value: 1)
+                                }) {
+                                    Image(systemName: "chevron.right")
                                 }
                             }
 
