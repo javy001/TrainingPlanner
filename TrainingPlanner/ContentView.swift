@@ -21,9 +21,8 @@ struct ContentView: View {
     @State private var importStartDate = Calendar.current.date(byAdding: .day, value: -90, to: Date()) ?? Date()
     @State private var importEndDate = Date()
     @State private var hasRunLaunchImport = false
-    @State private var showLaunchImportAlert = false
-    @State private var launchImportAddedCount = 0
     @State private var showUnitPreferences = false
+    @State private var showTrainingZones = false
     private let importDaysChoices = [7, 14, 30, 90, 180]
 
     var body: some View {
@@ -50,8 +49,19 @@ struct ContentView: View {
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
                                 HStack(spacing: 12) {
-                                    Button(action: { showUnitPreferences = true }) {
-                                        Image(systemName: "gearshape")
+                                    Menu {
+                                        Button {
+                                            showUnitPreferences = true
+                                        } label: {
+                                            Label("App settings", systemImage: "gearshape")
+                                        }
+                                        Button {
+                                            showTrainingZones = true
+                                        } label: {
+                                            Label("Training zones", systemImage: "bolt.fill")
+                                        }
+                                    } label: {
+                                        Image(systemName: "line.3.horizontal")
                                     }
                                     Button(action: {
                                         handleSwipe(value: 1)
@@ -101,17 +111,15 @@ struct ContentView: View {
         .sheet(isPresented: $showUnitPreferences) {
             UnitPreferencesView()
         }
+        .sheet(isPresented: $showTrainingZones) {
+            TrainingZonesView()
+        }
         .alert("Import from Health", isPresented: $showImportAlert) {
             Button("OK", role: .cancel) { importResult = nil }
         } message: {
             if let result = importResult {
                 Text(result)
             }
-        }
-        .alert("Apple Health", isPresented: $showLaunchImportAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("\(launchImportAddedCount) workout\(launchImportAddedCount == 1 ? "" : "s") added from Apple Health.")
         }
         .task {
             await fetchLastSevenDaysFromHealth()
@@ -208,13 +216,7 @@ struct ContentView: View {
         let end = Date()
         let start = Calendar.current.date(byAdding: .day, value: -7, to: end) ?? end
         do {
-            let added = try await vm.importFromHealth(from: start, to: end)
-            if added > 0 {
-                await MainActor.run {
-                    launchImportAddedCount = added
-                    showLaunchImportAlert = true
-                }
-            }
+            _ = try await vm.importFromHealth(from: start, to: end)
         } catch {
             // Silent on launch; user can use Import from Health menu if needed.
         }
