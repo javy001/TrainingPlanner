@@ -27,8 +27,16 @@ private struct CyclingZone: Identifiable {
     let maxPercent: Int
     let color: Color
 
-    func powerRange(ftp: Int) -> (min: Int, max: Int) {
-        (min: (ftp * minPercent) / 100, max: (ftp * maxPercent) / 100)
+    /// When previousZoneMax is non-nil, min = previousZoneMax + 1 (no gaps between zones).
+    func powerRange(ftp: Int, previousZoneMax: Int? = nil) -> (min: Int, max: Int) {
+        let minW: Int
+        if let prev = previousZoneMax {
+            minW = prev + 1
+        } else {
+            minW = (ftp * minPercent) / 100
+        }
+        let maxW = (ftp * maxPercent) / 100
+        return (min: minW, max: maxW)
     }
 }
 
@@ -51,10 +59,16 @@ private struct RunningZone: Identifiable {
     let color: Color
 
     /// Returns (slower pace, faster pace) in seconds per unit (same unit as ltPaceSecPerUnit).
-    func paceRangeSec(ltPaceSecPerUnit: Double) -> (min: Int, max: Int) {
-        let slower = ltPaceSecPerUnit / (Double(maxPercent) / 100)
-        let faster = ltPaceSecPerUnit / (Double(minPercent) / 100)
-        return (min: Int(slower.rounded()), max: Int(faster.rounded()))
+    /// When previousZoneMax is non-nil, slower = previousZoneMax + 1 (no gaps between zones).
+    func paceRangeSec(ltPaceSecPerUnit: Double, previousZoneMax: Int? = nil) -> (min: Int, max: Int) {
+        let slower: Int
+        if let prev = previousZoneMax {
+            slower = prev + 1
+        } else {
+            slower = Int((ltPaceSecPerUnit / (Double(minPercent) / 100)).rounded())
+        }
+        let faster = Int((ltPaceSecPerUnit / (Double(maxPercent) / 100)).rounded())
+        return (min: slower, max: faster)
     }
 }
 
@@ -126,9 +140,19 @@ struct TrainingZonesView: View {
                     }
 
                     if ftpWatts > 0 {
+                        let powerZoneRanges: [(zone: CyclingZone, range: (min: Int, max: Int))] = {
+                            var result: [(zone: CyclingZone, range: (min: Int, max: Int))] = []
+                            var prevMax: Int? = nil
+                            for zone in cyclingZones {
+                                let range = zone.powerRange(ftp: ftpWatts, previousZoneMax: prevMax)
+                                result.append((zone, range))
+                                prevMax = range.max
+                            }
+                            return result
+                        }()
                         Section("Power zones (% of FTP)") {
-                            ForEach(cyclingZones) { zone in
-                                let range = zone.powerRange(ftp: ftpWatts)
+                            ForEach(powerZoneRanges, id: \.zone.id) { item in
+                                let (zone, range) = (item.zone, item.range)
                                 HStack(spacing: 12) {
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(zone.color)
@@ -166,10 +190,20 @@ struct TrainingZonesView: View {
                     }
 
                     if ltPaceSecondsPerKm > 0 {
+                        let secPerUnit = useMetricUnits ? ltPaceSecondsPerKm : (ltPaceSecondsPerKm * secondsPerKmPerMile)
+                        let zoneRanges: [(zone: RunningZone, range: (min: Int, max: Int))] = {
+                            var result: [(zone: RunningZone, range: (min: Int, max: Int))] = []
+                            var prevMax: Int? = nil
+                            for zone in runningZones {
+                                let range = zone.paceRangeSec(ltPaceSecPerUnit: secPerUnit, previousZoneMax: prevMax)
+                                result.append((zone, range))
+                                prevMax = range.max
+                            }
+                            return result
+                        }()
                         Section("Pace zones (% of threshold)") {
-                            ForEach(runningZones) { zone in
-                                let secPerUnit = useMetricUnits ? ltPaceSecondsPerKm : (ltPaceSecondsPerKm * secondsPerKmPerMile)
-                                let range = zone.paceRangeSec(ltPaceSecPerUnit: secPerUnit)
+                            ForEach(zoneRanges, id: \.zone.id) { item in
+                                let (zone, range) = (item.zone, item.range)
                                 HStack(spacing: 12) {
                                     RoundedRectangle(cornerRadius: 4)
                                         .fill(zone.color)
@@ -178,7 +212,7 @@ struct TrainingZonesView: View {
                                         VStack(alignment: .trailing, spacing: 2) {
                                             Text("\(zone.minPercent)–\(zone.maxPercent)%")
                                                 .foregroundStyle(.secondary)
-                                            Text("\(formatPace(seconds: range.max))–\(formatPace(seconds: range.min))")
+                                            Text("\(formatPace(seconds: range.min))–\(formatPace(seconds: range.max))")
                                                 .font(.subheadline.weight(.medium))
                                         }
                                     }
