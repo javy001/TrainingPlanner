@@ -42,9 +42,9 @@ private struct CyclingZone: Identifiable {
 
 private let cyclingZones: [CyclingZone] = [
     CyclingZone(id: "z1", name: "Recovery", minPercent: 0, maxPercent: 55, color: .blue),
-    CyclingZone(id: "z2", name: "Endurance", minPercent: 56, maxPercent: 75, color: .green),
-    CyclingZone(id: "z3", name: "Tempo", minPercent: 76, maxPercent: 90, color: .yellow),
-    CyclingZone(id: "z4", name: "Threshold", minPercent: 91, maxPercent: 105, color: .orange),
+    CyclingZone(id: "z2", name: "Endurance", minPercent: 55, maxPercent: 75, color: .green),
+    CyclingZone(id: "z3", name: "Tempo", minPercent: 75, maxPercent: 90, color: .yellow),
+    CyclingZone(id: "z4", name: "Threshold", minPercent: 90, maxPercent: 105, color: .orange),
     CyclingZone(id: "z5", name: "VO2max", minPercent: 106, maxPercent: 150, color: .red),
 ]
 
@@ -63,7 +63,7 @@ private struct RunningZone: Identifiable {
     func paceRangeSec(ltPaceSecPerUnit: Double, previousZoneMax: Int? = nil) -> (min: Int, max: Int) {
         let slower: Int
         if let prev = previousZoneMax {
-            slower = prev + 1
+            slower = prev - 1
         } else {
             slower = Int((ltPaceSecPerUnit / (Double(minPercent) / 100)).rounded())
         }
@@ -74,9 +74,9 @@ private struct RunningZone: Identifiable {
 
 private let runningZones: [RunningZone] = [
     RunningZone(id: "z1", name: "Recovery", minPercent: 65, maxPercent: 78, color: .blue),
-    RunningZone(id: "z2", name: "Endurance", minPercent: 79, maxPercent: 88, color: .green),
-    RunningZone(id: "z3", name: "Tempo", minPercent: 89, maxPercent: 93, color: .yellow),
-    RunningZone(id: "z4", name: "Threshold", minPercent: 94, maxPercent: 99, color: .orange),
+    RunningZone(id: "z2", name: "Endurance", minPercent: 78, maxPercent: 88, color: .green),
+    RunningZone(id: "z3", name: "Tempo", minPercent: 88, maxPercent: 93, color: .yellow),
+    RunningZone(id: "z4", name: "Threshold", minPercent: 93, maxPercent: 100, color: .orange),
     RunningZone(id: "z5", name: "VO2max", minPercent: 100, maxPercent: 115, color: .red),
 ]
 
