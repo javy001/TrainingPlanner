@@ -19,7 +19,7 @@ private extension Binding where Value == String {
     }
 }
 
-/// Cycling power zones as percentages of FTP (Coggan-style 5-zone model).
+/// Cycling power zones as percentages of FTP (Coggan-style model; former tempo band split into tempo + sweet spot).
 private struct CyclingZone: Identifiable {
     let id: String
     let name: String
@@ -41,11 +41,12 @@ private struct CyclingZone: Identifiable {
 }
 
 private let cyclingZones: [CyclingZone] = [
-    CyclingZone(id: "z1", name: "Recovery", minPercent: 0, maxPercent: 55, color: .blue),
-    CyclingZone(id: "z2", name: "Endurance", minPercent: 55, maxPercent: 75, color: .green),
-    CyclingZone(id: "z3", name: "Tempo", minPercent: 75, maxPercent: 90, color: .yellow),
-    CyclingZone(id: "z4", name: "Threshold", minPercent: 90, maxPercent: 105, color: .orange),
-    CyclingZone(id: "z5", name: "VO2max", minPercent: 106, maxPercent: 150, color: .red),
+    CyclingZone(id: "z1", name: "Recovery", minPercent: 0, maxPercent: 55, color: .white),
+    CyclingZone(id: "z2", name: "Endurance", minPercent: 55, maxPercent: 75, color: .blue),
+    CyclingZone(id: "z3", name: "Tempo", minPercent: 75, maxPercent: 84, color: .green),
+    CyclingZone(id: "z4", name: "Sweet spot", minPercent: 84, maxPercent: 90, color: .yellow),
+    CyclingZone(id: "z5", name: "Threshold", minPercent: 90, maxPercent: 105, color: .orange),
+    CyclingZone(id: "z6", name: "VO2max", minPercent: 106, maxPercent: 150, color: .red),
 ]
 
 // MARK: - Running (pace-based zones)
