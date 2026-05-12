@@ -153,7 +153,7 @@ struct AddWorkoutView: View {
             .navigationTitle(Text(title))
             .onAppear {
                 guard let w = workout else { return }
-                let dist = (w.distance as? NSNumber)?.doubleValue ?? (w.distance as? Double) ?? 0
+                let dist = w.distance
                 if w.type == "Swimming" {
                     let (val, _) = Utils.swimmingDistanceDisplay(miles: dist, useMetric: useMetricUnits)
                     distance = String(format: "%.2f", val)

@@ -117,7 +117,7 @@ struct WeekView: View {
             .refreshable {
                 let end = Date()
                 let start = calendar.date(byAdding: .day, value: -7, to: end) ?? end
-                try? await vm.importFromHealth(from: start, to: end)
+                do { _ = try await vm.importFromHealth(from: start, to: end) } catch {}
                 await MainActor.run {
                     vm.fetchData()
                 }

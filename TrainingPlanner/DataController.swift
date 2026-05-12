@@ -80,7 +80,7 @@ class DataController: ObservableObject {
     /// If a Health workout matches an existing workout (same day, type, and similar duration/distance), it overwrites that workout.
     /// - Parameter range: Date range to fetch from Health (e.g. last 90 days).
     /// - Returns: Number of workouts imported (added or updated).
-    func importFromHealth(from start: Date, to end: Date) async throws -> Int {
+    func importFromHealth(from start: Date, to end: Date, skipDeleted: Bool = true) async throws -> Int {
         let manager = HealthKitManager()
         try await manager.requestAuthorization()
         var hkWorkouts = try await manager.fetchWorkouts(from: start, to: end)
@@ -88,12 +88,14 @@ class DataController: ObservableObject {
 
         let calendar = Calendar.current
         var existingUUIDs = Set(workouts.compactMap { $0.healthKitUUID })
+        let deletedUUIDs = skipDeleted ? deletedHealthKitUUIDs : []
         var matchedWorkoutIDs = Set<UUID>()
         var importedCount = 0
 
         for hk in hkWorkouts {
             let uuidString = hk.uuid.uuidString
             if existingUUIDs.contains(uuidString) { continue }
+            if deletedUUIDs.contains(uuidString) { continue }
             guard let values = hk.toAppWorkoutValues() else { continue }
 
             // Look for an existing workout on the same day, same type, similar duration (5%) and distance (0.05 mi).
@@ -170,8 +172,33 @@ class DataController: ObservableObject {
     }
     
     func deleteWorkout(workout: Workout) {
+        if let uuid = workout.healthKitUUID {
+            var deleted = deletedHealthKitUUIDs
+            deleted.insert(uuid)
+            deletedHealthKitUUIDs = deleted
+        }
         container.viewContext.delete(workout)
         saveContext()
+    }
+
+    private let deletedHealthKitUUIDsKey = "deletedHealthKitUUIDs"
+
+    private var deletedHealthKitUUIDs: Set<String> {
+        get {
+            let dict = UserDefaults.standard.dictionary(forKey: deletedHealthKitUUIDsKey) as? [String: Double] ?? [:]
+            let cutoff = Date().addingTimeInterval(-30 * 24 * 60 * 60).timeIntervalSinceReferenceDate
+            return Set(dict.compactMap { uuid, ts in ts > cutoff ? uuid : nil })
+        }
+        set {
+            var dict = UserDefaults.standard.dictionary(forKey: deletedHealthKitUUIDsKey) as? [String: Double] ?? [:]
+            let cutoff = Date().addingTimeInterval(-30 * 24 * 60 * 60).timeIntervalSinceReferenceDate
+            dict = dict.filter { _, ts in ts > cutoff }
+            let now = Date().timeIntervalSinceReferenceDate
+            for uuid in newValue where dict[uuid] == nil {
+                dict[uuid] = now
+            }
+            UserDefaults.standard.set(dict, forKey: deletedHealthKitUUIDsKey)
+        }
     }
 
 }

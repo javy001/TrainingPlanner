@@ -227,7 +227,7 @@ struct ContentView: View {
         isImportingHealth = true
         Task {
             do {
-                let added = try await vm.importFromHealth(from: start, to: end)
+                let added = try await vm.importFromHealth(from: start, to: end, skipDeleted: false)
                 await MainActor.run {
                     isImportingHealth = false
                     importResult = added > 0
